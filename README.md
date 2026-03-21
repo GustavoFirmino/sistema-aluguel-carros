@@ -13,10 +13,17 @@ Nesta etapa, realizamos a análise de requisitos e a modelagem UML inicial.
 - **Diagrama de Pacotes**: Visão lógica seguindo o padrão MVC (Model-View-Controller).
 
 ### 2. Histórias de Usuário
-- **US01**: Como Cliente, quero me cadastrar informando meus dados (RG, CPF, Nome, Endereço, Profissão e Rendimentos) para acessar o sistema.
-- **US02**: Como Cliente, quero solicitar o aluguel de um veículo para que os agentes possam avaliar meu pedido.
-- **US03**: Como Agente, quero analisar financeiramente um pedido para aprovar ou reprovar o aluguel.
-
+- **US01**: Como cliente, quero me cadastrar no sistema para poder solicitar aluguel de veículos.
+- **US02**: Como cliente, quero criar um pedido de aluguel para obter um carro.
+- **US03**: Como cliente, quero visualizar meus pedidos para acompanhar o status.
+- **US04**: Como cliente, quero editar um pedido para corrigir ou alterar informações.
+- **US05**: Como cliente, quero cancelar um pedido caso não tenha mais interesse.
+- **US06**: Como agente, quero avaliar pedidos para decidir se aprovo ou não.
+- **US07**: Como agente, quero alterar pedidos para ajustes administrativos.
+- **US08**: Como banco, quero associar crédito ao pedido para viabilizar o aluguel.
+- **US09**: Como sistema, quero gerar contratos para formalizar o aluguel.
+- **US10**: Como sistema, quero armazenar dados dos veículos para controle.
+  
 ## 💻 Tecnologias Previstas
 - Java (Spring Boot)
 - Arquitetura MVC
