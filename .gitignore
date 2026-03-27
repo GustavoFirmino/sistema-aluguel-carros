@@ -1,0 +1,25 @@
+# OS / Editor
+.DS_Store
+Thumbs.db
+.vscode/
+
+# Java / Gradle
+**/.gradle/
+**/build/
+**/out/
+**/bin/
+**/target/
+**/.classpath
+**/.project
+**/.settings/
+**/.factorypath
+**/*.class
+
+# Micronaut
+**/.micronaut/
+
+# IntelliJ
+**/.idea/
+**/*.iml
+**/*.ipr
+**/*.iws
