@@ -5,7 +5,7 @@ services:
     environment:
       POSTGRES_DB: aluguel_carros
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: admin
+      POSTGRES_PASSWORD: postgres
     ports:
       - "5432:5432"
     volumes:
