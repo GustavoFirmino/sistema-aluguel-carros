@@ -1,0 +1,36 @@
+@startuml
+package controller
+package "application.usecase" as usecase
+package "application.service" as appservice
+package "domain.model" as domainmodel
+package "domain.service" as domainservice
+package "domain.repository" as domainrepo
+package dto
+package enums
+package "infrastructure.persistence.entity" as persistenceentity
+package "infrastructure.persistence.repository" as persistencerepo
+package "infrastructure.mapper" as mapper
+package "infrastructure.config" as config
+package "infrastructure.exception" as exception
+
+controller --> usecase
+controller --> dto
+
+usecase --> domainmodel
+usecase --> domainservice
+usecase --> domainrepo
+usecase --> dto
+usecase --> mapper
+
+domainservice --> domainmodel
+domainservice --> domainrepo
+
+persistencerepo --> domainrepo
+persistencerepo --> persistenceentity
+mapper --> dto
+mapper --> domainmodel
+mapper --> persistenceentity
+
+controller --> exception
+config --> controller
+@enduml

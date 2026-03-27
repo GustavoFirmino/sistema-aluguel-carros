@@ -1,0 +1,42 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+actor Cliente
+actor Agente
+actor Banco
+actor Empresa
+
+Agente <|-- Banco
+Agente <|-- Empresa
+
+rectangle "Sistema de Aluguel de Carros" {
+  usecase "Cadastrar cliente" as UC1
+  usecase "Atualizar dados cadastrais" as UC2
+  usecase "Consultar automóveis" as UC3
+  usecase "Criar pedido de aluguel" as UC4
+  usecase "Consultar status do pedido" as UC5
+  usecase "Cancelar pedido" as UC6
+  usecase "Analisar pedido" as UC7
+  usecase "Aprovar pedido" as UC8
+  usecase "Rejeitar pedido" as UC9
+  usecase "Associar contrato de crédito" as UC10
+}
+
+Cliente --> UC1
+Cliente --> UC2
+Cliente --> UC3
+Cliente --> UC4
+Cliente --> UC5
+Cliente --> UC6
+
+Agente --> UC7
+Agente --> UC8
+Agente --> UC9
+
+Banco --> UC10
+
+UC8 .> UC7 : <<include>>
+UC9 .> UC7 : <<include>>
+UC10 .> UC8 : <<extend>>
+@enduml
