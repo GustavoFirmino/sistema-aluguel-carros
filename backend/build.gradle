@@ -35,6 +35,7 @@ dependencies {
 
     runtimeOnly("ch.qos.logback:logback-classic")
     runtimeOnly("org.postgresql:postgresql")
+    runtimeOnly("com.h2database:h2")
 
     testImplementation("io.micronaut:micronaut-http-client")
     testImplementation("io.micronaut.jsonschema:micronaut-json-schema-validation")
