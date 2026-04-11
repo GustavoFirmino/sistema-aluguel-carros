@@ -1,7 +1,9 @@
 services:
+
+  # ── Banco de Dados ──────────────────────────────────────
   postgres:
     image: postgres:16
-    container_name: sistema-aluguel-carros
+    container_name: aluguel-carros-db
     environment:
       POSTGRES_DB: aluguel_carros
       POSTGRES_USER: postgres
@@ -10,6 +12,32 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d aluguel_carros"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   postgres_data:
+
+# ──────────────────────────────────────────────────────────
+# COMO RODAR O SISTEMA:
+#
+# 1. Subir o banco PostgreSQL:
+#      docker-compose up -d
+#
+# 2. Rodar o backend (nova aba do terminal):
+#      cd backend
+#      ./gradlew run
+#    → API disponível em: http://localhost:8080
+#
+# 3. Rodar o frontend (nova aba do terminal):
+#      cd frontend
+#      npm run dev
+#    → UI disponível em: http://localhost:5173
+#
+# Para usar PostgreSQL no backend, edite application.properties:
+#   - Comente as linhas do H2
+#   - Descomente as linhas do PostgreSQL
+# ──────────────────────────────────────────────────────────

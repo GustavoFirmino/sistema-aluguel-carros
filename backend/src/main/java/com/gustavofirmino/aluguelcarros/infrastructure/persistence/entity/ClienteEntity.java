@@ -3,6 +3,14 @@ package com.gustavofirmino.aluguelcarros.infrastructure.persistence.entity;
 import io.micronaut.serde.annotation.Serdeable;
 import jakarta.persistence.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Entidade JPA que representa um cliente na base de dados.
+ * Armazena dados de identificação e até 3 entidades empregadoras
+ * com seus respectivos rendimentos, conforme especificação do sistema.
+ */
 @Serdeable
 @Entity
 @Table(name = "clientes")
@@ -27,8 +35,11 @@ public class ClienteEntity {
     @Column(nullable = false)
     private String profissao;
 
-    public ClienteEntity() {
-    }
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "cliente_empregadores", joinColumns = @JoinColumn(name = "cliente_id"))
+    private List<EmpregadorEmbeddable> empregadores = new ArrayList<>();
+
+    public ClienteEntity() {}
 
     public ClienteEntity(Long id, String nome, String cpf, String rg, String endereco, String profissao) {
         this.id = id;
@@ -39,51 +50,24 @@ public class ClienteEntity {
         this.profissao = profissao;
     }
 
-    public Long getId() {
-        return id;
-    }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public String getNome() { return nome; }
+    public void setNome(String nome) { this.nome = nome; }
 
-    public String getNome() {
-        return nome;
-    }
+    public String getCpf() { return cpf; }
+    public void setCpf(String cpf) { this.cpf = cpf; }
 
-    public void setNome(String nome) {
-        this.nome = nome;
-    }
+    public String getRg() { return rg; }
+    public void setRg(String rg) { this.rg = rg; }
 
-    public String getCpf() {
-        return cpf;
-    }
+    public String getEndereco() { return endereco; }
+    public void setEndereco(String endereco) { this.endereco = endereco; }
 
-    public void setCpf(String cpf) {
-        this.cpf = cpf;
-    }
+    public String getProfissao() { return profissao; }
+    public void setProfissao(String profissao) { this.profissao = profissao; }
 
-    public String getRg() {
-        return rg;
-    }
-
-    public void setRg(String rg) {
-        this.rg = rg;
-    }
-
-    public String getEndereco() {
-        return endereco;
-    }
-
-    public void setEndereco(String endereco) {
-        this.endereco = endereco;
-    }
-
-    public String getProfissao() {
-        return profissao;
-    }
-
-    public void setProfissao(String profissao) {
-        this.profissao = profissao;
-    }
+    public List<EmpregadorEmbeddable> getEmpregadores() { return empregadores; }
+    public void setEmpregadores(List<EmpregadorEmbeddable> empregadores) { this.empregadores = empregadores; }
 }
