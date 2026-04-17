@@ -1,0 +1,268 @@
+@startuml pacotes-v3-ajustado
+title Sistema de Aluguel de Carros — Diagrama de Pacotes (Sprint 03)
+
+left to right direction
+scale 0.55
+
+skinparam dpi 150
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 9
+skinparam packageStyle rectangle
+skinparam linetype ortho
+skinparam ranksep 25
+skinparam nodesep 15
+
+skinparam package {
+  BorderColor #555555
+  FontStyle Bold
+  FontSize 10
+}
+
+skinparam class {
+  FontSize 8
+}
+
+' ─────────────────────────────────────────────────
+' FRONTEND (React)
+' ─────────────────────────────────────────────────
+
+package "frontend" as frontend #FFE4B5 {
+  package "pages" as frontend_pages #FFDEAD {
+    class HomePage
+    class Login
+    class Cadastro
+    class Perfil
+    class MeusPedidos
+    class Dashboard
+    class Clientes
+    class Automoveis
+    class Agentes
+    class Pedidos
+    class Contratos
+    class PedidosBanco
+    class PedidosEmpresa
+    class Estrategia
+  }
+
+  package "components" as frontend_components #FFEFD5 {
+    class Navbar
+    class Footer
+    class Carousel
+    class NovoPedidoModal
+    class PedidoDetailModal
+  }
+
+  package "services" as frontend_services #FFD700 {
+    class "api.js (Axios)" as ApiAxios
+  }
+
+  package "hooks" as frontend_hooks #FFD700 {
+    class useAuth
+  }
+}
+
+' ─────────────────────────────────────────────────
+' BACKEND (Micronaut)
+' ─────────────────────────────────────────────────
+
+package "com.gustavofirmino.aluguelcarros" as backend #E6F0FF {
+
+  package "controller" as controller #BFDFFF {
+    class AuthController
+    class ClienteController
+    class AutomovelController
+    class PedidoController
+    class AgenteController
+    class ContratoController
+    class HealthController
+  }
+
+  package "application" as application #D4EDDA {
+
+    package "auth" as application_auth #A8D5B5 {
+      class AuthService
+      class AuthSession
+    }
+
+    package "usecase.cliente" as application_usecase_cliente #C8E6C9 {
+      class CriarClienteUseCase
+      class ListarClientesUseCase
+      class AtualizarClienteUseCase
+      class BuscarClientePorIdUseCase
+      class DeletarClienteUseCase
+    }
+
+    package "usecase.automovel" as application_usecase_automovel #C8E6C9 {
+      class CriarAutomovelUseCase
+      class ListarAutomoveisUseCase
+      class AtualizarAutomovelUseCase
+      class BuscarAutomovelPorIdUseCase
+      class DeletarAutomovelUseCase
+    }
+
+    package "usecase.pedido" as application_usecase_pedido #C8E6C9 {
+      class CriarPedidoUseCase
+      class ListarPedidosUseCase
+      class BuscarPedidoPorIdUseCase
+      class AtualizarStatusPedidoUseCase
+      class CancelarPedidoUseCase
+    }
+
+    package "usecase.agente" as application_usecase_agente #C8E6C9 {
+      class CriarAgenteUseCase
+      class ListarAgentesUseCase
+      class AtualizarAgenteUseCase
+      class BuscarAgentePorIdUseCase
+      class DeletarAgenteUseCase
+    }
+
+    package "usecase.contrato" as application_usecase_contrato #C8E6C9 {
+      class GerarContratoUseCase
+      class ListarContratosUseCase
+      class BuscarContratoPorPedidoUseCase
+    }
+  }
+
+  package "domain.model" as domain_model #FFF3CD {
+    enum StatusPedido {
+      PENDENTE
+      APROVADO_BANCO
+      REJEITADO
+      CANCELADO
+      CONCLUIDO
+    }
+
+    enum TipoAgente {
+      EMPRESA
+      BANCO
+    }
+  }
+
+  package "dto" as dto #FCE4EC {
+    package "dto.auth" as dto_auth #F8BBD0 {
+      class AuthRequestDTO
+      class CadastroRequestDTO
+      class AuthResponseDTO
+    }
+
+    package "dto.cliente" as dto_cliente #F8BBD0 {
+      class ClienteRequestDTO
+      class ClienteResponseDTO
+    }
+
+    package "dto.automovel" as dto_automovel #F8BBD0 {
+      class AutomovelRequestDTO
+      class AutomovelResponseDTO
+    }
+
+    package "dto.pedido" as dto_pedido #F8BBD0 {
+      class PedidoRequestDTO
+      class PedidoResponseDTO
+      class AtualizarStatusPedidoDTO
+    }
+
+    package "dto.agente" as dto_agente #F8BBD0 {
+      class AgenteRequestDTO
+      class AgenteResponseDTO
+    }
+
+    package "dto.contrato" as dto_contrato #F8BBD0 {
+      class ContratoResponseDTO
+    }
+
+    class PageDTO
+  }
+
+  package "infrastructure" as infrastructure #F3E5F5 {
+
+    package "filter" as infrastructure_filter #E1BEE7 {
+      class AuthFilter
+      class HttpLoggingFilter
+    }
+
+    package "exception" as infrastructure_exception #CE93D8 {
+      class GlobalExceptionHandler
+      class BusinessException
+      class ResourceNotFoundException
+    }
+
+    package "mapper" as infrastructure_mapper #BA68C8 {
+      class ClienteMapper
+      class AutomovelMapper
+      class PedidoMapper
+      class AgenteMapper
+      class ContratoMapper
+    }
+
+    package "persistence.entity" as infrastructure_persistence_entity #9C27B0 {
+      class ClienteEntity
+      class AutomovelEntity
+      class PedidoEntity
+      class AgenteEntity
+      class ContratoEntity
+      class EmpregadorEmbeddable
+    }
+
+    package "persistence.repository" as infrastructure_persistence_repository #7B1FA2 {
+      interface ClienteRepository
+      interface AutomovelRepository
+      interface PedidoRepository
+      interface AgenteRepository
+      interface ContratoRepository
+    }
+
+    class DataSeeder
+  }
+
+  package "tests" as tests #E8F5E9 {
+    class AtualizarStatusPedidoUseCaseTest
+    class CriarPedidoUseCaseTest
+    class CancelarPedidoUseCaseTest
+  }
+}
+
+' ─────────────────────────────────────────────────
+' DEPENDÊNCIAS ENTRE PACOTES
+' ─────────────────────────────────────────────────
+
+frontend_services ..> controller : HTTP / REST
+frontend_hooks ..> frontend_services : usa
+
+controller ..> application_auth : usa
+controller ..> application_usecase_cliente : usa
+controller ..> application_usecase_automovel : usa
+controller ..> application_usecase_pedido : usa
+controller ..> application_usecase_agente : usa
+controller ..> application_usecase_contrato : usa
+controller ..> dto : usa
+
+application_auth ..> infrastructure_persistence_repository : usa
+application_auth ..> dto_auth : usa DTO
+
+application_usecase_cliente ..> domain_model : usa
+application_usecase_automovel ..> domain_model : usa
+application_usecase_pedido ..> domain_model : usa
+application_usecase_agente ..> domain_model : usa
+application_usecase_contrato ..> domain_model : usa
+
+application_usecase_cliente ..> infrastructure_mapper : usa
+application_usecase_automovel ..> infrastructure_mapper : usa
+application_usecase_pedido ..> infrastructure_mapper : usa
+application_usecase_agente ..> infrastructure_mapper : usa
+application_usecase_contrato ..> infrastructure_mapper : usa
+
+application_usecase_cliente ..> infrastructure_persistence_repository : usa
+application_usecase_automovel ..> infrastructure_persistence_repository : usa
+application_usecase_pedido ..> infrastructure_persistence_repository : usa
+application_usecase_agente ..> infrastructure_persistence_repository : usa
+application_usecase_contrato ..> infrastructure_persistence_repository : usa
+
+infrastructure_mapper ..> dto : converte para
+infrastructure_mapper ..> infrastructure_persistence_entity : lê de
+infrastructure_persistence_repository ..> infrastructure_persistence_entity : persiste
+
+infrastructure_filter ..> application_auth : valida token
+tests ..> application_usecase_pedido : testa
+
+@enduml

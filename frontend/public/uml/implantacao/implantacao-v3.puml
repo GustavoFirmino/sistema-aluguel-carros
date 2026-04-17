@@ -1,0 +1,158 @@
+@startuml implantacao-v4-estilo-modelo
+title Sistema de Aluguel de Carros — Diagrama de Implantação e Comunicação
+
+left to right direction
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam ArrowColor #336699
+skinparam packageStyle rectangle
+skinparam componentStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 35
+skinparam ranksep 40
+
+skinparam node {
+  BackgroundColor #EEF5FF
+  BorderColor #336699
+}
+
+skinparam artifact {
+  BackgroundColor #F8F8FF
+  BorderColor #7A7A7A
+}
+
+skinparam component {
+  BackgroundColor #FFFFFF
+  BorderColor #666666
+}
+
+skinparam database {
+  BackgroundColor #FFFDF5
+  BorderColor #8A6D3B
+}
+
+' =========================================================
+' CLIENTE
+' =========================================================
+node "Cliente" as cliente #FDF6E3 {
+  node "Máquina do Usuário" as maquina_usuario {
+    component "Navegador Web\n(Chrome / Firefox / Safari)" as browser
+    artifact "Frontend React SPA\nHTML + JS + CSS" as spa
+  }
+}
+
+browser --> spa : executa
+
+note bottom of spa
+  Roles detectados no localStorage:
+  admin | agente | banco | empresa | cliente
+  Rotas protegidas por papel
+end note
+
+' =========================================================
+' AMBIENTE DE DESENVOLVIMENTO
+' =========================================================
+node "Ambiente de Desenvolvimento" as dev_env #EAF7EA {
+
+  node "Frontend Dev" as frontend_dev {
+    component "Vite Dev Server\n:5173" as vite
+    artifact "React 18 + HMR" as dev_frontend
+  }
+
+  node "Backend Dev" as backend_dev {
+    component "Micronaut 4 + Netty\n:8080" as api_dev
+    artifact "Controllers REST" as ctrls_dev
+    artifact "AuthFilter" as filter_dev
+    artifact "AuthService\n(sessões em memória)" as auth_dev
+    artifact "Use Cases" as uc_dev
+    artifact "DataSeeder" as seed_dev
+  }
+
+  node "Banco Dev" as banco_dev {
+    database "H2 In-Memory\naluguel_carros" as h2
+  }
+}
+
+dev_frontend --> vite : servido por
+vite --> api_dev : HTTP REST\n/api
+api_dev --> h2 : JDBC / Hibernate JPA
+
+ctrls_dev --> uc_dev : delega
+filter_dev --> auth_dev : valida token
+api_dev --> ctrls_dev : expõe endpoints
+api_dev --> filter_dev : aplica segurança
+api_dev --> seed_dev : carga inicial
+
+' =========================================================
+' AMBIENTE DE PRODUÇÃO
+' =========================================================
+node "Ambiente de Produção" as prod_env #EEF5FF {
+
+  node "Camada Web" as camada_web {
+    node "Container Frontend" as nginx_container {
+      component "Nginx\n:80" as nginx
+      artifact "Build React (dist)\nSPA + gzip + proxy /api" as prod_frontend
+    }
+  }
+
+  node "Camada de Aplicação" as camada_app {
+    node "Container Backend" as api_container_node {
+      component "Micronaut\n:8080" as api_prod
+      artifact "Shadow JAR" as jar
+      artifact "application-prod.properties" as props
+      artifact "Controllers + AuthFilter\n+ Services + Use Cases" as backend_logic
+    }
+  }
+
+  node "Camada de Dados" as camada_dados {
+    node "Container Banco" as pg_container {
+      database "PostgreSQL 16\naluguel_carros" as pg
+      artifact "Volume Docker\npersistente" as vol
+    }
+  }
+}
+
+prod_frontend --> nginx : servido por
+nginx --> api_prod : proxy /api
+api_prod --> pg : JDBC PostgreSQL
+pg --> vol : persistência
+
+api_prod --> jar : executa
+api_prod --> props : carrega config
+api_prod --> backend_logic : executa lógica
+
+note bottom of api_prod
+  Variáveis obrigatórias:
+  MICRONAUT_ENVIRONMENTS=prod
+  DB_URL
+  DB_USER
+  DB_PASSWORD
+end note
+
+' =========================================================
+' FLUXO DE ACESSO
+' =========================================================
+browser --> vite : modo dev\nHTTP :5173
+browser --> nginx : modo prod\nHTTP :80
+
+' =========================================================
+' COMUNICAÇÃO LÓGICA
+' =========================================================
+interface "Interface REST" as IRest
+interface "Interface de Autenticação" as IAuth
+interface "Persistência JDBC / SQL" as IData
+
+spa ..> IRest : requer
+api_dev - IRest : provê
+api_prod - IRest : provê
+
+spa ..> IAuth : requer
+filter_dev - IAuth : provê
+backend_logic - IAuth : provê
+
+api_dev ..> IData : requer
+api_prod ..> IData : requer
+h2 - IData : provê
+pg - IData : provê
+
+@enduml

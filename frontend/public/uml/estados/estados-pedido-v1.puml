@@ -1,0 +1,105 @@
+@startuml estados-pedido-v4
+title Sistema de Aluguel de Carros\nDiagrama de Transição de Estados — Pedido de Aluguel
+
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 11
+
+skinparam state {
+  BackgroundColor #EEF5FF
+  BorderColor #336699
+  FontColor #0f172a
+  ArrowColor #336699
+}
+
+skinparam note {
+  BackgroundColor #FFFDE7
+  BorderColor #F9A825
+  FontSize 10
+}
+
+note as guards
+  **Pré-condições para criação do pedido:**
+  • cliente.bancoAgente != null
+  • automovel.disponivel == true
+  • dataFim > dataInicio
+
+  **Regras do fluxo:**
+  • Banco pode aprovar ou rejeitar pedido pendente
+  • Cliente pode cancelar enquanto estiver pendente
+  • Empresa pode concluir ou rejeitar após aprovação do banco
+
+  **Efeitos colaterais:**
+  • REJEITADO ou CANCELADO → automovel.disponivel = true
+  • CONCLUIDO → ContratoEntity criado com valorTotal calculado
+end note
+
+state "Decisão do banco" as DECISAO_BANCO <<choice>>
+state "Decisão da empresa" as DECISAO_EMPRESA <<choice>>
+
+state PENDENTE {
+  PENDENTE : status = PENDENTE
+  PENDENTE : automovel.disponivel = false
+  PENDENTE : bancoAgente = cliente.bancoAgente
+}
+
+state APROVADO_BANCO {
+  APROVADO_BANCO : status = APROVADO_BANCO
+  APROVADO_BANCO : bancoAgente vinculado
+  APROVADO_BANCO : aguarda ação da empresa
+}
+
+state REJEITADO {
+  REJEITADO : status = REJEITADO
+  REJEITADO : automovel.disponivel = true
+  REJEITADO : observacao registrada
+}
+
+state CANCELADO {
+  CANCELADO : status = CANCELADO
+  CANCELADO : automovel.disponivel = true
+}
+
+state CONCLUIDO {
+  CONCLUIDO : status = CONCLUIDO
+  CONCLUIDO : pedido.empresa vinculada
+  CONCLUIDO : ContratoEntity gerado
+  CONCLUIDO : valorTotal = valorDiaria × diasAluguel
+}
+
+[*] --> PENDENTE : <<create>>\nCliente cria pedido\n/ automovel.disponivel = false\n/ bancoAgente copiado do perfil
+
+PENDENTE --> DECISAO_BANCO : Banco analisa pedido
+
+DECISAO_BANCO --> APROVADO_BANCO : [crédito aprovado]\n/ PATCH /pedidos/{id}/status\n{status: "APROVADO_BANCO"}
+
+DECISAO_BANCO --> REJEITADO : [else]\n/ PATCH /pedidos/{id}/status\n{status: "REJEITADO"}\n/ automovel.disponivel = true
+
+PENDENTE --> CANCELADO : Cliente cancela\n/ PATCH /pedidos/{id}/cancelar\n/ automovel.disponivel = true
+
+APROVADO_BANCO --> DECISAO_EMPRESA : Empresa avalia pedido
+
+DECISAO_EMPRESA --> CONCLUIDO : [empresaId válido]\nEmpresa gera contrato\n/ POST /contratos/pedido/{id}/gerar\n/ pedido.empresa = empresa\n/ ContratoEntity criado
+
+DECISAO_EMPRESA --> REJEITADO : [else]\nEmpresa rejeita o pedido\n/ PATCH /pedidos/{id}/status\n{status: "REJEITADO"}\n/ automovel.disponivel = true
+
+REJEITADO --> [*] : Fim do fluxo
+CANCELADO --> [*] : Fim do fluxo
+CONCLUIDO --> [*] : Fim do fluxo
+
+note right of PENDENTE
+  **Próximo ator esperado:** Banco
+  Cliente ainda pode cancelar.
+end note
+
+note right of APROVADO_BANCO
+  **Próximo ator esperado:** Empresa
+  Banco aprovou o crédito.
+end note
+
+note right of CONCLUIDO
+  **Efeito:** GerarContratoUseCase
+  valorTotal = valorDiaria × diasAluguel
+end note
+
+@enduml

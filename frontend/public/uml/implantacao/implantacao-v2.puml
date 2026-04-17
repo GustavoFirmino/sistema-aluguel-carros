@@ -1,0 +1,53 @@
+@startuml implantacao-v2
+title Sistema de Aluguel de Carros — Diagrama de Implantação (Sprint 03)
+
+skinparam shadowing false
+skinparam nodeBackgroundColor #EEF5FF
+skinparam nodeBorderColor #336699
+skinparam artifactBackgroundColor #F5F5FF
+skinparam ArrowColor #336699
+
+node "Máquina do Usuário" {
+  node "Navegador Web" as browser {
+    artifact "React 18 + Vite\n(localhost:5173)" as frontend
+  }
+}
+
+node "Servidor de Aplicação\n(localhost)" {
+
+  node "Backend — Micronaut 4.10.10\n(localhost:8080)" as api {
+    artifact "AgenteController" as ctrl_agente
+    artifact "AutomovelController" as ctrl_auto
+    artifact "ClienteController" as ctrl_cli
+    artifact "PedidoController" as ctrl_ped
+    artifact "ContratoController" as ctrl_ctr
+    artifact "Use Cases (Clean Architecture)" as usecases
+    artifact "DataSeeder (dados demo)" as seeder
+    artifact "GlobalExceptionHandler" as handler
+  }
+
+  node "Banco de Dados\n(modo dev: H2 in-memory)" as db {
+    database "H2 / PostgreSQL" as banco
+  }
+}
+
+node "Infraestrutura de Containers\n(produção)" {
+  node "Docker Compose" as docker {
+    node "Container PostgreSQL 16" as pgcontainer {
+      database "PostgreSQL" as pg
+      artifact "Volume de Dados" as vol
+    }
+  }
+}
+
+frontend --> api : "HTTP/REST\n(proxy Vite)"
+ctrl_agente --> usecases
+ctrl_auto --> usecases
+ctrl_cli --> usecases
+ctrl_ped --> usecases
+ctrl_ctr --> usecases
+usecases --> banco : "JDBC / Hibernate JPA"
+pg --> vol : persistência
+api ..> pgcontainer : "(produção)"
+
+@enduml

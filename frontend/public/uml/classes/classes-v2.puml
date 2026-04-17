@@ -1,0 +1,243 @@
+@startuml classes-v2
+
+title Sistema de Aluguel de Carros — Diagrama de Classes (Sprint 03)
+
+skinparam classAttributeIconSize 0
+skinparam classFontStyle Bold
+skinparam classBackgroundColor #EEF5FF
+skinparam classBorderColor #336699
+skinparam ArrowColor #336699
+skinparam packageBackgroundColor #F5F5FF
+skinparam packageBorderColor #AAAACC
+
+' ─────────────────────────────────────────────────────────
+' DOMÍNIO
+' ─────────────────────────────────────────────────────────
+
+package "domain.model" {
+
+    class Cliente {
+        - id : Long
+        - nome : String
+        - cpf : String
+        - rg : String
+        - endereco : String
+        - profissao : String
+        + getters/setters()
+    }
+
+    class Automovel {
+        - id : Long
+        - matricula : String
+        - ano : Integer
+        - marca : String
+        - modelo : String
+        - placa : String
+        - disponivel : boolean
+        + getters/setters()
+    }
+
+    class Pedido {
+        - id : Long
+        - cliente : Cliente
+        - automovel : Automovel
+        - dataInicio : LocalDate
+        - dataFim : LocalDate
+        - status : StatusPedido
+        - dataCriacao : LocalDateTime
+        - dataAtualizacao : LocalDateTime
+        - observacao : String
+        + getters/setters()
+    }
+
+    enum StatusPedido {
+        PENDENTE
+        EM_ANALISE
+        APROVADO
+        REJEITADO
+        CANCELADO
+        CONCLUIDO
+    }
+
+    Pedido --> Cliente : "realizado por"
+    Pedido --> Automovel : "reserva"
+    Pedido --> StatusPedido : "possui"
+}
+
+' ─────────────────────────────────────────────────────────
+' INFRAESTRUTURA — ENTIDADES JPA
+' ─────────────────────────────────────────────────────────
+
+package "infrastructure.persistence.entity" {
+
+    class ClienteEntity <<Entity>> {
+        - id : Long
+        - nome : String
+        - cpf : String
+        - rg : String
+        - endereco : String
+        - profissao : String
+    }
+
+    class AutomovelEntity <<Entity>> {
+        - id : Long
+        - matricula : String
+        - ano : Integer
+        - marca : String
+        - modelo : String
+        - placa : String
+        - disponivel : boolean
+    }
+
+    class PedidoEntity <<Entity>> {
+        - id : Long
+        - cliente : ClienteEntity
+        - automovel : AutomovelEntity
+        - dataInicio : LocalDate
+        - dataFim : LocalDate
+        - status : StatusPedido
+        - dataCriacao : LocalDateTime
+        - dataAtualizacao : LocalDateTime
+        - observacao : String
+        + prePersist()
+        + preUpdate()
+    }
+
+    PedidoEntity "N" --> "1" ClienteEntity
+    PedidoEntity "N" --> "1" AutomovelEntity
+}
+
+' ─────────────────────────────────────────────────────────
+' INFRAESTRUTURA — REPOSITÓRIOS
+' ─────────────────────────────────────────────────────────
+
+package "infrastructure.persistence.repository" {
+
+    interface ClienteRepository <<Repository>> {
+        + findByCpf(cpf: String) : Optional<ClienteEntity>
+    }
+
+    interface AutomovelRepository <<Repository>> {
+        + findByPlaca(placa: String) : Optional<AutomovelEntity>
+        + findByMatricula(matricula: String) : Optional<AutomovelEntity>
+        + findByDisponivel(disponivel: boolean) : List<AutomovelEntity>
+    }
+
+    interface PedidoRepository <<Repository>> {
+        + findByClienteId(clienteId: Long) : List<PedidoEntity>
+        + findByStatus(status: StatusPedido) : List<PedidoEntity>
+        + findByAutomovelId(automovelId: Long) : List<PedidoEntity>
+    }
+
+    ClienteRepository ..> ClienteEntity
+    AutomovelRepository ..> AutomovelEntity
+    PedidoRepository ..> PedidoEntity
+}
+
+' ─────────────────────────────────────────────────────────
+' INFRAESTRUTURA — MAPPERS
+' ─────────────────────────────────────────────────────────
+
+package "infrastructure.mapper" {
+
+    class ClienteMapper <<Singleton>> {
+        + toDomain(dto: ClienteRequestDTO) : Cliente
+        + toEntity(cliente: Cliente) : ClienteEntity
+        + toDomain(entity: ClienteEntity) : Cliente
+        + toResponse(cliente: Cliente) : ClienteResponseDTO
+        + updateEntity(entity, dto)
+    }
+
+    class AutomovelMapper <<Singleton>> {
+        + toDomain(dto: AutomovelRequestDTO) : Automovel
+        + toEntity(automovel: Automovel) : AutomovelEntity
+        + toDomain(entity: AutomovelEntity) : Automovel
+        + toResponse(automovel: Automovel) : AutomovelResponseDTO
+        + updateEntity(entity, dto)
+    }
+
+    class PedidoMapper <<Singleton>> {
+        + toDomain(entity: PedidoEntity) : Pedido
+        + toEntity(pedido, clienteEntity, automovelEntity) : PedidoEntity
+        + toResponse(pedido: Pedido) : PedidoResponseDTO
+    }
+}
+
+' ─────────────────────────────────────────────────────────
+' APLICAÇÃO — CASOS DE USO
+' ─────────────────────────────────────────────────────────
+
+package "application.usecase.cliente" {
+    class CriarClienteUseCase <<Singleton>>
+    class ListarClientesUseCase <<Singleton>>
+    class BuscarClientePorIdUseCase <<Singleton>>
+    class AtualizarClienteUseCase <<Singleton>>
+    class DeletarClienteUseCase <<Singleton>>
+}
+
+package "application.usecase.automovel" {
+    class CriarAutomovelUseCase <<Singleton>>
+    class ListarAutomoveisUseCase <<Singleton>>
+    class BuscarAutomovelPorIdUseCase <<Singleton>>
+    class AtualizarAutomovelUseCase <<Singleton>>
+    class DeletarAutomovelUseCase <<Singleton>>
+}
+
+package "application.usecase.pedido" {
+    class CriarPedidoUseCase <<Singleton>>
+    class ListarPedidosUseCase <<Singleton>>
+    class BuscarPedidoPorIdUseCase <<Singleton>>
+    class AtualizarStatusPedidoUseCase <<Singleton>>
+    class CancelarPedidoUseCase <<Singleton>>
+}
+
+' ─────────────────────────────────────────────────────────
+' CONTROLLERS
+' ─────────────────────────────────────────────────────────
+
+package "controller" {
+
+    class ClienteController <<Controller>> {
+        + criar(dto) : HttpResponse
+        + listar() : List
+        + buscarPorId(id) : ClienteResponseDTO
+        + atualizar(id, dto) : ClienteResponseDTO
+        + deletar(id) : HttpResponse
+    }
+
+    class AutomovelController <<Controller>> {
+        + criar(dto) : HttpResponse
+        + listar(disponivel) : List
+        + buscarPorId(id) : AutomovelResponseDTO
+        + atualizar(id, dto) : AutomovelResponseDTO
+        + deletar(id) : HttpResponse
+    }
+
+    class PedidoController <<Controller>> {
+        + criar(dto) : HttpResponse
+        + listar(clienteId) : List
+        + buscarPorId(id) : PedidoResponseDTO
+        + atualizarStatus(id, dto) : PedidoResponseDTO
+        + cancelar(id) : PedidoResponseDTO
+    }
+
+    ClienteController --> CriarClienteUseCase
+    ClienteController --> ListarClientesUseCase
+    ClienteController --> BuscarClientePorIdUseCase
+    ClienteController --> AtualizarClienteUseCase
+    ClienteController --> DeletarClienteUseCase
+
+    AutomovelController --> CriarAutomovelUseCase
+    AutomovelController --> ListarAutomoveisUseCase
+    AutomovelController --> BuscarAutomovelPorIdUseCase
+    AutomovelController --> AtualizarAutomovelUseCase
+    AutomovelController --> DeletarAutomovelUseCase
+
+    PedidoController --> CriarPedidoUseCase
+    PedidoController --> ListarPedidosUseCase
+    PedidoController --> BuscarPedidoPorIdUseCase
+    PedidoController --> AtualizarStatusPedidoUseCase
+    PedidoController --> CancelarPedidoUseCase
+}
+
+@enduml

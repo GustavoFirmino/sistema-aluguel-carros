@@ -1,0 +1,35 @@
+@startuml
+left to right direction
+skinparam shadowing false
+
+node "Máquina do Usuário" {
+  artifact "Navegador Web" as browser
+}
+
+node "Ambiente Docker" {
+
+  node "Container API - Micronaut" as api {
+    artifact "Controllers REST" as ctrls
+    artifact "Use Cases" as usecases
+    artifact "Domain Services" as domainservices
+    artifact "Repositories" as repos
+    artifact "Swagger / OpenAPI" as openapi
+  }
+
+  node "Container Banco de Dados" as dbcontainer {
+    database "PostgreSQL" as postgres
+    artifact "Volume de Dados" as volume
+  }
+
+  frame "Docker Network" as network
+}
+
+browser --> api : HTTP
+ctrls --> usecases
+usecases --> domainservices
+usecases --> repos
+repos --> postgres : JDBC
+postgres --> volume : persistência
+api -- network
+dbcontainer -- network
+@enduml

@@ -1,0 +1,48 @@
+@startuml pacotes-geral
+title Sistema de Aluguel de Carros — Diagrama de Pacotes (Visão Geral)
+
+top to bottom direction
+skinparam dpi 180
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 13
+skinparam packageStyle rectangle
+skinparam linetype ortho
+
+skinparam package {
+  BorderColor #555555
+  FontStyle Bold
+  FontSize 14
+}
+
+package "frontend" as frontend #FFE4B5 {
+  package "pages" as frontend_pages #FFDEAD
+  package "components" as frontend_components #FFEFD5
+  package "services" as frontend_services #FFD700
+  package "hooks" as frontend_hooks #FFD700
+}
+
+package "backend" as backend #E6F0FF {
+  package "controller" as controller #BFDFFF
+  package "application" as application #D4EDDA
+  package "domain.model" as domain_model #FFF3CD
+  package "dto" as dto #FCE4EC
+  package "infrastructure" as infrastructure #F3E5F5
+  package "tests" as tests #E8F5E9
+}
+
+frontend_hooks ..> frontend_services : usa
+frontend_services ..> controller : HTTP / REST
+
+controller ..> application : usa
+controller ..> dto : usa DTOs
+
+application ..> domain_model : regras de negócio
+application ..> dto : entrada/saída
+
+infrastructure ..> domain_model : entidades / dados
+infrastructure ..> application : implementa persistência
+
+tests ..> application : testa casos de uso
+
+@enduml

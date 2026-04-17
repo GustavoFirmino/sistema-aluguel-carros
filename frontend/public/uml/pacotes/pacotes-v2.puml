@@ -1,0 +1,93 @@
+@startuml pacotes-v2
+title Sistema de Aluguel de Carros — Diagrama de Pacotes (Sprint 03)
+
+skinparam packageBackgroundColor #EEF5FF
+skinparam packageBorderColor #336699
+skinparam ArrowColor #336699
+skinparam shadowing false
+
+package "com.gustavofirmino.aluguelcarros" {
+
+  package "controller" {
+    class ClienteController
+    class AutomovelController
+    class PedidoController
+    class AgenteController
+    class ContratoController
+    class HealthController
+  }
+
+  package "application.usecase" {
+    package "cliente"   { class CriarClienteUseCase }
+    package "automovel" { class CriarAutomovelUseCase }
+    package "pedido"    { class CriarPedidoUseCase }
+    package "agente"    { class CriarAgenteUseCase }
+    package "contrato"  { class GerarContratoUseCase }
+  }
+
+  package "domain.model" {
+    class Cliente
+    class Automovel
+    class Pedido
+    class Agente
+    class Contrato
+    enum StatusPedido
+    enum TipoAgente
+  }
+
+  package "dto" {
+    package "cliente"  { class ClienteRequestDTO }
+    package "automovel"{ class AutomovelRequestDTO }
+    package "pedido"   { class PedidoRequestDTO }
+    package "agente"   { class AgenteRequestDTO }
+    package "contrato" { class ContratoResponseDTO }
+  }
+
+  package "infrastructure" {
+
+    package "persistence.entity" {
+      class ClienteEntity
+      class AutomovelEntity
+      class PedidoEntity
+      class AgenteEntity
+      class ContratoEntity
+      class EmpregadorEmbeddable
+    }
+
+    package "persistence.repository" {
+      interface ClienteRepository
+      interface AutomovelRepository
+      interface PedidoRepository
+      interface AgenteRepository
+      interface ContratoRepository
+    }
+
+    package "mapper" {
+      class ClienteMapper
+      class AutomovelMapper
+      class PedidoMapper
+      class AgenteMapper
+      class ContratoMapper
+    }
+
+    package "exception" {
+      class GlobalExceptionHandler
+      class BusinessException
+      class ResourceNotFoundException
+    }
+
+    class DataSeeder
+  }
+}
+
+controller --> "application.usecase"
+controller --> dto
+"application.usecase" --> "domain.model"
+"application.usecase" --> "infrastructure.mapper"
+"application.usecase" --> "infrastructure.persistence.repository"
+"infrastructure.mapper" --> dto
+"infrastructure.mapper" --> "domain.model"
+"infrastructure.mapper" --> "infrastructure.persistence.entity"
+"infrastructure.persistence.repository" --> "infrastructure.persistence.entity"
+
+@enduml

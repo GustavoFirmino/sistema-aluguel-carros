@@ -1,0 +1,127 @@
+@startuml componentes-v4
+title Sistema de Aluguel de Carros — Diagrama de Componentes (Sprint 03 — Revisado)
+
+skinparam componentBackgroundColor #EEF5FF
+skinparam componentBorderColor     #336699
+skinparam interfaceBackgroundColor #FFFFFF
+skinparam interfaceBorderColor     #336699
+skinparam packageBackgroundColor   #F5F5FF
+skinparam packageBorderColor       #AAAACC
+skinparam ArrowColor               #336699
+skinparam shadowing false
+
+' ─────────────────────────────────────────────────────────
+' FRONTEND
+' ─────────────────────────────────────────────────────────
+
+package "Frontend (React 18 + Vite :5173)" {
+  [React App\nPúblico · Cliente · Admin\nBanco · Empresa] as frontend
+}
+
+' ─────────────────────────────────────────────────────────
+' BACKEND
+' ─────────────────────────────────────────────────────────
+
+package "Backend (Micronaut 4 + Netty :8080)" {
+
+  package "infrastructure.filter" {
+    [AuthFilter\n+ HttpLoggingFilter] as filters
+  }
+
+  package "application.auth" {
+    [AuthService\n(sessões ConcurrentHashMap)] as authSvc
+  }
+
+  package "controller" {
+    [AuthController\n/auth] as ctrlAuth
+    [ClienteController\n/clientes] as ctrlCli
+    [AutomovelController\n/automoveis] as ctrlAuto
+    [PedidoController\n/pedidos] as ctrlPed
+    [AgenteController\n/agentes] as ctrlAgente
+    [ContratoController\n/contratos] as ctrlCtr
+    [HealthController\n/ · /health] as ctrlHealth
+  }
+
+  package "application.usecase" {
+    [UseCases: Cliente] as ucCli
+    [UseCases: Automóvel] as ucAuto
+    [UseCases: Pedido] as ucPed
+    [UseCases: Agente] as ucAgente
+    [UseCases: Contrato] as ucCtr
+  }
+
+  package "infrastructure" {
+    [Mappers\n(Entity ↔ DTO)] as mappers
+    [Repositories\n(Micronaut Data JPA)] as repos
+    [GlobalExceptionHandler] as excHandler
+    [DataSeeder] as seeder
+  }
+}
+
+database "H2 (dev)\nPostgreSQL 16 (prod)" as db
+
+' ─────────────────────────────────────────────────────────
+' INTERFACES UML (bolinhas e meias-luas)
+' ─────────────────────────────────────────────────────────
+
+() "REST API\n:8080"       as iRest
+() "IAuth\nvalidarToken"   as iAuth
+() "IData\nJPA Repos"      as iData
+
+' ─────────────────────────────────────────────────────────
+' CONEXÕES
+' ─────────────────────────────────────────────────────────
+
+' Frontend requer REST API (meia-lua)
+frontend  --( iRest
+
+' AuthFilter provê a superfície HTTP (bolinha)
+filters   -   iRest
+
+' AuthFilter requer validação de token (meia-lua)
+filters   --( iAuth
+
+' AuthService provê IAuth (bolinha)
+authSvc   -   iAuth
+
+' AuthFilter roteia para controllers
+filters --> ctrlAuth
+filters --> ctrlCli
+filters --> ctrlAuto
+filters --> ctrlPed
+filters --> ctrlAgente
+filters --> ctrlCtr
+filters --> ctrlHealth
+
+' AuthController usa AuthService diretamente
+ctrlAuth --> authSvc
+
+' Controllers → Use Cases
+ctrlCli    --> ucCli
+ctrlAuto   --> ucAuto
+ctrlPed    --> ucPed
+ctrlAgente --> ucAgente
+ctrlCtr    --> ucCtr
+
+' Use Cases → Mappers
+ucCli    --> mappers
+ucAuto   --> mappers
+ucPed    --> mappers
+ucAgente --> mappers
+ucCtr    --> mappers
+
+' Use Cases requerem IData (meia-lua)
+ucCli    --( iData
+ucAuto   --( iData
+ucPed    --( iData
+ucAgente --( iData
+ucCtr    --( iData
+authSvc  --( iData
+
+' Repositories provêem IData (bolinha)
+repos    -   iData
+
+' Repositories → Banco de dados
+repos --> db : "JDBC / Hibernate JPA"
+
+@enduml
