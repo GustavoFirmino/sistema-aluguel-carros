@@ -3,6 +3,7 @@ package com.gustavofirmino.aluguelcarros.infrastructure.persistence.entity;
 import io.micronaut.serde.annotation.Serdeable;
 import jakarta.persistence.*;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,6 +40,13 @@ public class ClienteEntity {
     @CollectionTable(name = "cliente_empregadores", joinColumns = @JoinColumn(name = "cliente_id"))
     private List<EmpregadorEmbeddable> empregadores = new ArrayList<>();
 
+    @Column(precision = 10, scale = 2)
+    private BigDecimal rendaMensal;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "banco_agente_id")
+    private AgenteEntity bancoAgente;
+
     public ClienteEntity() {}
 
     public ClienteEntity(Long id, String nome, String cpf, String rg, String endereco, String profissao) {
@@ -70,4 +78,10 @@ public class ClienteEntity {
 
     public List<EmpregadorEmbeddable> getEmpregadores() { return empregadores; }
     public void setEmpregadores(List<EmpregadorEmbeddable> empregadores) { this.empregadores = empregadores; }
+
+    public BigDecimal getRendaMensal() { return rendaMensal; }
+    public void setRendaMensal(BigDecimal rendaMensal) { this.rendaMensal = rendaMensal; }
+
+    public AgenteEntity getBancoAgente() { return bancoAgente; }
+    public void setBancoAgente(AgenteEntity bancoAgente) { this.bancoAgente = bancoAgente; }
 }

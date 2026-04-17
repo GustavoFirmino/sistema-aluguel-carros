@@ -1,11 +1,12 @@
 package com.gustavofirmino.aluguelcarros.application.usecase.cliente;
 
-import com.gustavofirmino.aluguelcarros.domain.model.Cliente;
 import com.gustavofirmino.aluguelcarros.dto.cliente.ClienteRequestDTO;
 import com.gustavofirmino.aluguelcarros.dto.cliente.ClienteResponseDTO;
 import com.gustavofirmino.aluguelcarros.infrastructure.exception.BusinessException;
+import com.gustavofirmino.aluguelcarros.infrastructure.exception.ResourceNotFoundException;
 import com.gustavofirmino.aluguelcarros.infrastructure.mapper.ClienteMapper;
 import com.gustavofirmino.aluguelcarros.infrastructure.persistence.entity.ClienteEntity;
+import com.gustavofirmino.aluguelcarros.infrastructure.persistence.repository.AgenteRepository;
 import com.gustavofirmino.aluguelcarros.infrastructure.persistence.repository.ClienteRepository;
 import jakarta.inject.Singleton;
 
@@ -13,10 +14,14 @@ import jakarta.inject.Singleton;
 public class CriarClienteUseCase {
 
     private final ClienteRepository clienteRepository;
+    private final AgenteRepository agenteRepository;
     private final ClienteMapper clienteMapper;
 
-    public CriarClienteUseCase(ClienteRepository clienteRepository, ClienteMapper clienteMapper) {
+    public CriarClienteUseCase(ClienteRepository clienteRepository,
+                                AgenteRepository agenteRepository,
+                                ClienteMapper clienteMapper) {
         this.clienteRepository = clienteRepository;
+        this.agenteRepository = agenteRepository;
         this.clienteMapper = clienteMapper;
     }
 
@@ -25,8 +30,15 @@ public class CriarClienteUseCase {
             throw new BusinessException("Já existe um cliente cadastrado com este CPF.");
         }
 
-        Cliente cliente = clienteMapper.toDomain(dto);
-        ClienteEntity salvo = clienteRepository.save(clienteMapper.toEntity(cliente));
-        return clienteMapper.toResponse(clienteMapper.toDomain(salvo));
+        ClienteEntity entity = new ClienteEntity();
+        clienteMapper.applyDto(entity, dto);
+
+        if (dto.getBancoAgenteId() != null) {
+            entity.setBancoAgente(agenteRepository.findById(dto.getBancoAgenteId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Banco não encontrado: " + dto.getBancoAgenteId())));
+        }
+
+        ClienteEntity salvo = clienteRepository.save(entity);
+        return clienteMapper.toResponse(salvo);
     }
 }

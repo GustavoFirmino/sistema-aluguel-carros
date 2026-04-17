@@ -30,6 +30,7 @@ dependencies {
     implementation("io.micronaut.serde:micronaut-serde-jackson")
     implementation("io.micronaut.sql:micronaut-jdbc-hikari")
 
+
     compileOnly("io.micronaut:micronaut-http-client")
     compileOnly("io.micronaut.openapi:micronaut-openapi-annotations")
 
@@ -37,8 +38,13 @@ dependencies {
     runtimeOnly("org.postgresql:postgresql")
     runtimeOnly("com.h2database:h2")
 
+    // Testes — JUnit 5 + Mockito
     testImplementation("io.micronaut:micronaut-http-client")
     testImplementation("io.micronaut.jsonschema:micronaut-json-schema-validation")
+    testImplementation("io.micronaut.test:micronaut-test-junit5")
+    testImplementation("org.mockito:mockito-core:5.11.0")
+    testImplementation("org.mockito:mockito-junit-jupiter:5.11.0")
+    testImplementation("org.assertj:assertj-core:3.26.3")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
@@ -57,6 +63,9 @@ java {
 
 tasks {
 
+    run {
+        systemProperty("micronaut.environments", "dev")
+    }
 
     dockerBuild {
         images = ["${System.env.DOCKER_IMAGE ?: project.name}:$project.version"]

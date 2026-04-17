@@ -1,0 +1,355 @@
+@startuml classes-v4
+title Sistema de Aluguel de Carros — Diagrama de Classes (Sprint 03 — Revisado)
+
+skinparam classAttributeIconSize 0
+skinparam classFontStyle         Bold
+skinparam classBackgroundColor   #EEF5FF
+skinparam classBorderColor       #336699
+skinparam ArrowColor             #336699
+skinparam packageBackgroundColor #F5F5FF
+skinparam packageBorderColor     #AAAACC
+skinparam shadowing false
+
+' ─────────────────────────────────────────────────────────
+' DOMÍNIO — ENUMS
+' ─────────────────────────────────────────────────────────
+
+package "domain.model" {
+
+    enum StatusPedido {
+        PENDENTE
+        APROVADO_BANCO
+        REJEITADO
+        CANCELADO
+        CONCLUIDO
+    }
+
+    enum TipoAgente {
+        EMPRESA
+        BANCO
+    }
+
+    ' ── Modelos de domínio (POJOs) ──────────────────────
+
+    class Cliente {
+        - id : Long
+        - nome : String
+        - cpf : String
+        - rg : String
+        - endereco : String
+        - profissao : String
+        - empregadores : List<Empregador>
+    }
+
+    class Empregador {
+        - nomeEmpresa : String
+        - rendimento : BigDecimal
+    }
+
+    class Automovel {
+        - id : Long
+        - matricula : String
+        - ano : Integer
+        - marca : String
+        - modelo : String
+        - placa : String
+        - cor : String
+        - disponivel : boolean
+        - valorDiaria : BigDecimal
+    }
+
+    class Pedido {
+        - id : Long
+        - dataInicio : LocalDate
+        - dataFim : LocalDate
+        - status : StatusPedido
+        - observacao : String
+        - dataCriacao : LocalDateTime
+        - dataAtualizacao : LocalDateTime
+    }
+
+    class Agente {
+        - id : Long
+        - nome : String
+        - cnpj : String
+        - tipo : TipoAgente
+        - email : String
+        - telefone : String
+    }
+
+    class Contrato {
+        - id : Long
+        - pedidoId : Long
+        - numeroContrato : String
+        - clienteNome : String
+        - clienteCpf : String
+        - automovelDescricao : String
+        - agenteNome : String
+        - diasAluguel : Long
+        - valorDiaria : BigDecimal
+        - valorTotal : BigDecimal
+        - dataContrato : LocalDateTime
+        - possuiContratoCredito : boolean
+        - bancoAgenteNome : String
+    }
+
+    Cliente       "1" *-- "0..*" Empregador   : contém
+    Pedido        "N" -->  "1"   Cliente      : cliente
+    Pedido        "N" -->  "1"   Automovel    : automovel
+    Pedido              -->       StatusPedido : status
+    Agente              -->       TipoAgente   : tipo
+}
+
+' ─────────────────────────────────────────────────────────
+' INFRAESTRUTURA — ENTIDADES JPA
+' ─────────────────────────────────────────────────────────
+
+package "infrastructure.persistence.entity" {
+
+    class ClienteEntity <<Entity>> {
+        - id : Long
+        - nome : String
+        - cpf : String  <<unique>>
+        - rg : String
+        - endereco : String
+        - profissao : String
+        - rendaMensal : BigDecimal
+        - empregadores : List<EmpregadorEmbeddable>
+        - bancoAgente : AgenteEntity
+    }
+
+    class EmpregadorEmbeddable <<Embeddable>> {
+        - nomeEmpresa : String
+        - rendimento : BigDecimal
+    }
+
+    class AutomovelEntity <<Entity>> {
+        - id : Long
+        - matricula : String  <<unique>>
+        - ano : Integer
+        - marca : String
+        - modelo : String
+        - placa : String  <<unique>>
+        - cor : String
+        - disponivel : boolean
+        - valorDiaria : BigDecimal
+        - fotoUrl : String
+    }
+
+    class PedidoEntity <<Entity>> {
+        - id : Long
+        - dataInicio : LocalDate
+        - dataFim : LocalDate
+        - status : StatusPedido
+        - observacao : String
+        - dataCriacao : LocalDateTime
+        - dataAtualizacao : LocalDateTime
+        + prePersist() : void
+        + preUpdate() : void
+    }
+
+    class AgenteEntity <<Entity>> {
+        - id : Long
+        - nome : String
+        - cnpj : String  <<unique>>
+        - tipo : TipoAgente
+        - email : String
+        - telefone : String
+        - login : String  <<unique>>
+        - senha : String
+    }
+
+    class ContratoEntity <<Entity>> {
+        - id : Long
+        - numeroContrato : String  <<unique>>
+        - dataContrato : LocalDateTime
+        - diasAluguel : Long
+        - valorDiaria : BigDecimal
+        - valorTotal : BigDecimal
+        - possuiContratoCredito : boolean
+    }
+
+    ClienteEntity  "1"   *--  "0..*" EmpregadorEmbeddable : "@ElementCollection"
+    ClienteEntity  "N"   -->  "0..1" AgenteEntity         : "@ManyToOne bancoAgente"
+    PedidoEntity   "N"   -->  "1"    ClienteEntity        : "@ManyToOne"
+    PedidoEntity   "N"   -->  "1"    AutomovelEntity      : "@ManyToOne"
+    PedidoEntity   "N"   -->  "0..1" AgenteEntity         : "@ManyToOne bancoAgente"
+    PedidoEntity   "N"   -->  "0..1" AgenteEntity         : "@ManyToOne empresa"
+    PedidoEntity         -->         StatusPedido          : "status"
+    AgenteEntity         -->         TipoAgente            : "tipo"
+    ContratoEntity "1"   -->  "1"    PedidoEntity         : "@OneToOne"
+    ContratoEntity "N"   -->  "1"    AgenteEntity         : "@ManyToOne agente"
+    ContratoEntity "N"   -->  "0..1" AgenteEntity         : "@ManyToOne bancoAgente"
+}
+
+' ─────────────────────────────────────────────────────────
+' REPOSITÓRIOS
+' ─────────────────────────────────────────────────────────
+
+package "infrastructure.persistence.repository" {
+
+    interface ClienteRepository <<Repository>> {
+        + findByCpf(cpf : String) : Optional<ClienteEntity>
+    }
+
+    interface AutomovelRepository <<Repository>> {
+        + findByPlaca(placa : String) : Optional<AutomovelEntity>
+        + findByDisponivel(disponivel : boolean) : List<AutomovelEntity>
+    }
+
+    interface PedidoRepository <<Repository>> {
+        + findByClienteId(clienteId : Long) : List<PedidoEntity>
+        + findByBancoAgenteIdAndStatus(bancoId : Long, status : StatusPedido) : List<PedidoEntity>
+        + findByStatus(status : StatusPedido) : List<PedidoEntity>
+    }
+
+    interface AgenteRepository <<Repository>> {
+        + findByCnpj(cnpj : String) : Optional<AgenteEntity>
+        + findByTipo(tipo : TipoAgente) : List<AgenteEntity>
+        + findByLogin(login : String) : Optional<AgenteEntity>
+    }
+
+    interface ContratoRepository <<Repository>> {
+        + findByPedidoId(pedidoId : Long) : Optional<ContratoEntity>
+    }
+
+    ClienteRepository  ..>  ClienteEntity   : <<manages>>
+    AutomovelRepository ..> AutomovelEntity : <<manages>>
+    PedidoRepository   ..>  PedidoEntity    : <<manages>>
+    AgenteRepository   ..>  AgenteEntity    : <<manages>>
+    ContratoRepository ..>  ContratoEntity  : <<manages>>
+}
+
+' ─────────────────────────────────────────────────────────
+' AUTENTICAÇÃO
+' ─────────────────────────────────────────────────────────
+
+package "application.auth" {
+
+    class AuthService <<Singleton>> {
+        - usuariosDinamicos : ConcurrentHashMap<String, UserCredential>
+        - sessoes : ConcurrentHashMap<String, AuthSession>
+        + login(usuario : String, senha : String) : Optional<AuthResponseDTO>
+        + registrar(usuario : String, senha : String, nome : String, clienteId : Long) : Optional<AuthResponseDTO>
+        + validarToken(token : String) : Optional<AuthSession>
+        + usuarioExiste(usuario : String) : boolean
+        + logout(token : String) : void
+    }
+
+    class AuthSession {
+        + usuario : String
+        + nome : String
+        + role : String
+        + clienteId : Long
+        + agenteId : Long
+    }
+
+    AuthService +-- AuthSession
+    AuthService ..> AgenteRepository : usa
+}
+
+' ─────────────────────────────────────────────────────────
+' CASOS DE USO — PEDIDO
+' ─────────────────────────────────────────────────────────
+
+package "application.usecase.pedido" {
+
+    class CriarPedidoUseCase <<Singleton>> {
+        + executar(request : PedidoRequestDTO) : PedidoResponseDTO
+    }
+    class ListarPedidosUseCase <<Singleton>> {
+        + executar(pagina : int, tamanho : int) : PageDTO<PedidoResponseDTO>
+        + executarPorCliente(clienteId : Long) : List<PedidoResponseDTO>
+        + executarPorBanco(bancoId : Long) : List<PedidoResponseDTO>
+        + executarAprovadosBanco() : List<PedidoResponseDTO>
+    }
+    class BuscarPedidoPorIdUseCase <<Singleton>> {
+        + executar(id : Long) : PedidoResponseDTO
+    }
+    class AtualizarStatusPedidoUseCase <<Singleton>> {
+        + executar(id : Long, dto : AtualizarStatusPedidoDTO) : PedidoResponseDTO
+    }
+    class CancelarPedidoUseCase <<Singleton>> {
+        + executar(id : Long) : PedidoResponseDTO
+    }
+
+    CriarPedidoUseCase         ..> PedidoRepository   : usa
+    ListarPedidosUseCase       ..> PedidoRepository   : usa
+    BuscarPedidoPorIdUseCase   ..> PedidoRepository   : usa
+    AtualizarStatusPedidoUseCase ..> PedidoRepository : usa
+    CancelarPedidoUseCase      ..> PedidoRepository   : usa
+}
+
+' ─────────────────────────────────────────────────────────
+' CASOS DE USO — CONTRATO
+' ─────────────────────────────────────────────────────────
+
+package "application.usecase.contrato" {
+
+    class GerarContratoUseCase <<Singleton>> {
+        + executar(pedidoId : Long, empresaId : Long) : ContratoResponseDTO
+    }
+    class ListarContratosUseCase <<Singleton>> {
+        + executar() : List<ContratoResponseDTO>
+    }
+    class BuscarContratoPorPedidoUseCase <<Singleton>> {
+        + executar(pedidoId : Long) : ContratoResponseDTO
+    }
+    class AssociarCreditoUseCase <<Singleton>> {
+        + executar(contratoId : Long, dto : AssociarCreditoDTO) : ContratoResponseDTO
+    }
+
+    GerarContratoUseCase         ..> ContratoRepository : usa
+    GerarContratoUseCase         ..> PedidoRepository   : usa
+    ListarContratosUseCase       ..> ContratoRepository : usa
+    BuscarContratoPorPedidoUseCase ..> ContratoRepository : usa
+    AssociarCreditoUseCase       ..> ContratoRepository : usa
+}
+
+' ─────────────────────────────────────────────────────────
+' CONTROLLERS
+' ─────────────────────────────────────────────────────────
+
+package "controller" {
+
+    class AuthController <<Controller>> {
+        + login(request : AuthRequestDTO) : AuthResponseDTO       ' POST /auth/login
+        + cadastro(request : CadastroRequestDTO) : AuthResponseDTO ' POST /auth/cadastro
+        + logout(token : String) : void                           ' POST /auth/logout
+    }
+
+    class ClienteController <<Controller>> {
+        + criar(dto : ClienteRequestDTO) : ClienteResponseDTO     ' POST /clientes
+        + listar(pagina, tamanho) : PageDTO                       ' GET  /clientes
+        + buscarPorId(id : Long) : ClienteResponseDTO             ' GET  /clientes/{id}
+        + atualizar(id : Long, dto) : ClienteResponseDTO          ' PUT  /clientes/{id}
+        + deletar(id : Long) : void                               ' DELETE /clientes/{id}
+    }
+
+    class PedidoController <<Controller>> {
+        + criar(dto : PedidoRequestDTO) : PedidoResponseDTO       ' POST /pedidos
+        + listar(...) : Object                                     ' GET  /pedidos
+        + buscarPorId(id : Long) : PedidoResponseDTO              ' GET  /pedidos/{id}
+        + atualizarStatus(id : Long, dto) : PedidoResponseDTO     ' PATCH /pedidos/{id}/status
+        + cancelar(id : Long) : PedidoResponseDTO                 ' PATCH /pedidos/{id}/cancelar
+    }
+
+    class ContratoController <<Controller>> {
+        + listar() : List<ContratoResponseDTO>                    ' GET /contratos
+        + buscarPorPedido(pedidoId : Long) : ContratoResponseDTO  ' GET /contratos/pedido/{id}
+        + gerar(pedidoId : Long, empresaId : Long) : ContratoResponseDTO ' POST /contratos/pedido/{id}/gerar
+    }
+
+    AuthController    -->  AuthService
+    PedidoController  -->  CriarPedidoUseCase
+    PedidoController  -->  ListarPedidosUseCase
+    PedidoController  -->  BuscarPedidoPorIdUseCase
+    PedidoController  -->  AtualizarStatusPedidoUseCase
+    PedidoController  -->  CancelarPedidoUseCase
+    ContratoController --> GerarContratoUseCase
+    ContratoController --> ListarContratosUseCase
+    ContratoController --> BuscarContratoPorPedidoUseCase
+    ContratoController --> AssociarCreditoUseCase
+}
+
+@enduml

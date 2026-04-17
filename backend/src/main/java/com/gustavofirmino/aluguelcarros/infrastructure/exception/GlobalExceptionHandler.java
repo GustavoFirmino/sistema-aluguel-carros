@@ -15,9 +15,9 @@ import java.time.LocalDateTime;
  * Handler global de exceções que garante respostas HTTP padronizadas em toda a API.
  *
  * Mapeamento:
- *   BusinessException        → 422 Unprocessable Entity
- *   ResourceNotFoundException → 404 Not Found
- *   Exceções genéricas        → 500 Internal Server Error
+ *   BusinessException           → 422 Unprocessable Entity
+ *   ResourceNotFoundException   → 404 Not Found
+ *   ConstraintViolationException → tratado pelo handler embutido do Micronaut Validation
  */
 public class GlobalExceptionHandler {
 
@@ -65,4 +65,5 @@ public class GlobalExceptionHandler {
             return HttpResponse.<ErrorResponse>status(HttpStatus.NOT_FOUND).body(body);
         }
     }
+
 }

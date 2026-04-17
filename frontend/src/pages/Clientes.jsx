@@ -152,7 +152,7 @@ export default function Clientes() {
   const load = () => {
     setLoading(true);
     clienteService.listar()
-      .then(r => setClientes(r.data))
+      .then(r => setClientes(r.data.items ?? r.data))
       .catch(() => toast.error('Erro ao carregar clientes.'))
       .finally(() => setLoading(false));
   };

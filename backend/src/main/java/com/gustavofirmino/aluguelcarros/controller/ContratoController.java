@@ -46,8 +46,8 @@ public class ContratoController {
     }
 
     @Post("/pedido/{pedidoId}/gerar")
-    public ContratoResponseDTO gerar(@PathVariable Long pedidoId) {
-        return gerarContratoUseCase.executar(pedidoId);
+    public ContratoResponseDTO gerar(@PathVariable Long pedidoId, @QueryValue Long empresaId) {
+        return gerarContratoUseCase.executar(pedidoId, empresaId);
     }
 
     @Patch("/{id}/credito")

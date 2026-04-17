@@ -3,6 +3,7 @@ package com.gustavofirmino.aluguelcarros.dto.pedido;
 import io.micronaut.serde.annotation.Serdeable;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 import java.time.LocalDate;
 
@@ -20,12 +21,14 @@ public class PedidoRequestDTO {
     private Long automovelId;
 
     @NotNull(message = "Data de início é obrigatória.")
+    @Future(message = "Data de início deve ser uma data futura.")
     private LocalDate dataInicio;
 
     @NotNull(message = "Data de fim é obrigatória.")
     @Future(message = "Data de fim deve ser uma data futura.")
     private LocalDate dataFim;
 
+    @Size(max = 500, message = "Observação deve ter no máximo 500 caracteres.")
     private String observacao;
 
     public PedidoRequestDTO() {

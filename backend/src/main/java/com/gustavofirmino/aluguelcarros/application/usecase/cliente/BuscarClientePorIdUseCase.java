@@ -19,7 +19,6 @@ public class BuscarClientePorIdUseCase {
 
     public ClienteResponseDTO executar(Long id) {
         return clienteRepository.findById(id)
-                .map(clienteMapper::toDomain)
                 .map(clienteMapper::toResponse)
                 .orElseThrow(() -> new ResourceNotFoundException("Cliente não encontrado."));
     }

@@ -18,4 +18,6 @@ public interface PedidoRepository extends JpaRepository<PedidoEntity, Long> {
     List<PedidoEntity> findByStatus(StatusPedido status);
 
     List<PedidoEntity> findByAutomovelId(Long automovelId);
+
+    List<PedidoEntity> findByBancoAgenteId(Long bancoAgenteId);
 }

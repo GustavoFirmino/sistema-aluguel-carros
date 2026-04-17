@@ -16,12 +16,11 @@ function StatCard({ icon: Icon, label, value, iconBg, iconColor }) {
 
 function RecentPedidoRow({ pedido }) {
   const STATUS = {
-    PENDENTE:   { label: 'Pendente',   cls: 'badge-yellow' },
-    EM_ANALISE: { label: 'Em Análise', cls: 'badge-blue'   },
-    APROVADO:   { label: 'Aprovado',   cls: 'badge-green'  },
-    REJEITADO:  { label: 'Rejeitado',  cls: 'badge-red'    },
-    CANCELADO:  { label: 'Cancelado',  cls: 'badge-gray'   },
-    CONCLUIDO:  { label: 'Concluído',  cls: 'badge-purple' },
+    PENDENTE:      { label: 'Pendente',      cls: 'badge-yellow' },
+    APROVADO_BANCO:{ label: 'Aprov. Banco',  cls: 'badge-blue'   },
+    REJEITADO:     { label: 'Rejeitado',     cls: 'badge-red'    },
+    CANCELADO:     { label: 'Cancelado',     cls: 'badge-gray'   },
+    CONCLUIDO:     { label: 'Concluído',     cls: 'badge-purple' },
   };
   const s = STATUS[pedido.status] || { label: pedido.status, cls: 'badge-gray' };
   const fmt = d => d ? new Date(d + 'T00:00:00').toLocaleDateString('pt-BR') : '—';
@@ -54,16 +53,18 @@ export default function Dashboard() {
       contratoService.listar(),
       agenteService.listar(),
     ]).then(([c, a, aDisp, p, ct, ag]) => {
-      const todos = p.data;
+      // Suporte a respostas paginadas (PageDTO) e arrays simples
+      const arr = (r) => r?.data?.items ?? (Array.isArray(r?.data) ? r.data : []);
+      const todos = arr(p);
       setStats({
-        clientes:    c.data.length,
-        totalAutos:  a.data.length,
-        disponiveis: aDisp.data.length,
+        clientes:    arr(c).length,
+        totalAutos:  arr(a).length,
+        disponiveis: arr(aDisp).length,
         pendentes:   todos.filter(x => x.status === 'PENDENTE').length,
-        aprovados:   todos.filter(x => x.status === 'APROVADO').length,
+        aprovados:   todos.filter(x => x.status === 'APROVADO_BANCO').length,
         cancelados:  todos.filter(x => x.status === 'CANCELADO' || x.status === 'REJEITADO').length,
-        contratos:   ct.data.length,
-        agentes:     ag.data.length,
+        contratos:   arr(ct).length,
+        agentes:     arr(ag).length,
       });
       setPedidos(todos.slice(0, 8));
     }).finally(() => setLoading(false));

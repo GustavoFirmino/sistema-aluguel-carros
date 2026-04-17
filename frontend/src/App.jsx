@@ -1,77 +1,30 @@
 import { useState } from 'react';
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
-import Sidebar from './components/Sidebar';
+import Navbar from './components/Navbar';
+import Footer from './components/Footer';
+import HomePage from './pages/HomePage';
+import Login from './pages/Login';
+import Cadastro from './pages/Cadastro';
+import Perfil from './pages/Perfil';
+import MeusPedidos from './pages/MeusPedidos';
 import Dashboard from './pages/Dashboard';
 import Clientes from './pages/Clientes';
 import Automoveis from './pages/Automoveis';
 import Pedidos from './pages/Pedidos';
 import Agentes from './pages/Agentes';
 import Contratos from './pages/Contratos';
-import Login from './pages/Login';
-import { LogOut, User } from 'lucide-react';
+import Estrategia from './pages/Estrategia';
+import PedidosBanco from './pages/PedidosBanco';
+import PedidosEmpresa from './pages/PedidosEmpresa';
+import { authService } from './services/api';
 
-const PAGE_TITLES = {
-  '/':           { title: 'Dashboard',         sub: 'Visão geral do sistema' },
-  '/clientes':   { title: 'Clientes',           sub: 'Gestão de clientes cadastrados' },
-  '/automoveis': { title: 'Automóveis',         sub: 'Frota disponível para aluguel' },
-  '/pedidos':    { title: 'Pedidos de Aluguel', sub: 'Criação e acompanhamento de pedidos' },
-  '/agentes':    { title: 'Agentes',            sub: 'Empresas e bancos que analisam pedidos' },
-  '/contratos':  { title: 'Contratos',          sub: 'Contratos gerados a partir de pedidos aprovados' },
+const TOAST_OPTS = {
+  duration: 3500,
+  style: { fontSize: '.875rem', fontFamily: 'Inter, system-ui, sans-serif' },
+  success: { style: { background: '#f0fdf4', color: '#15803d', border: '1px solid #bbf7d0' } },
+  error:   { style: { background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca' } },
 };
-
-function Topbar({ usuario, onLogout }) {
-  const { pathname } = useLocation();
-  const info = PAGE_TITLES[pathname] || PAGE_TITLES['/'];
-  return (
-    <header className="topbar">
-      <div>
-        <div className="topbar-title">{info.title}</div>
-        <div className="topbar-subtitle">{info.sub}</div>
-      </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '.4rem', fontSize: '.82rem', color: '#6b7280' }}>
-          <User size={15} />
-          <span style={{ fontWeight: 600, color: '#374151' }}>{usuario?.nome}</span>
-        </div>
-        <button
-          onClick={onLogout}
-          title="Sair"
-          style={{
-            display: 'flex', alignItems: 'center', gap: '.3rem',
-            padding: '.35rem .7rem', borderRadius: 6,
-            background: 'transparent', border: '1px solid #e5e7eb',
-            cursor: 'pointer', fontSize: '.78rem', color: '#6b7280',
-            transition: 'all .15s',
-          }}
-          onMouseEnter={e => { e.currentTarget.style.background = '#fef2f2'; e.currentTarget.style.color = '#dc2626'; e.currentTarget.style.borderColor = '#fca5a5'; }}
-          onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#6b7280'; e.currentTarget.style.borderColor = '#e5e7eb'; }}
-        >
-          <LogOut size={13} /> Sair
-        </button>
-      </div>
-    </header>
-  );
-}
-
-function AppLayout({ usuario, onLogout }) {
-  return (
-    <div className="layout">
-      <Sidebar />
-      <div className="main">
-        <Topbar usuario={usuario} onLogout={onLogout} />
-        <Routes>
-          <Route path="/"           element={<Dashboard />} />
-          <Route path="/clientes"   element={<Clientes />} />
-          <Route path="/automoveis" element={<Automoveis />} />
-          <Route path="/pedidos"    element={<Pedidos />} />
-          <Route path="/agentes"    element={<Agentes />} />
-          <Route path="/contratos"  element={<Contratos />} />
-        </Routes>
-      </div>
-    </div>
-  );
-}
 
 export default function App() {
   const [usuario, setUsuario] = useState(() => {
@@ -79,34 +32,85 @@ export default function App() {
     catch { return null; }
   });
 
-  const handleLogin = (u) => setUsuario(u);
+  const handleLogin = (u) => {
+    setUsuario(u);
+    localStorage.setItem('auth_user', JSON.stringify(u));
+  };
 
   const handleLogout = () => {
+    const token = localStorage.getItem('auth_token');
+    if (token) authService.logout().catch(() => {});
+    localStorage.removeItem('auth_token');
     localStorage.removeItem('auth_user');
     setUsuario(null);
   };
 
-  if (!usuario) {
-    return (
-      <>
-        <Login onLogin={handleLogin} />
-        <Toaster position="top-right" />
-      </>
-    );
-  }
+  const role = usuario?.role;
+  const isAdmin   = role === 'admin' || role === 'agente';
+  const isBanco   = role === 'banco';
+  const isEmpresa = role === 'empresa';
+  const isCliente = role === 'cliente';
+
+  // Destino após login por papel
+  const homeByRole = isAdmin ? '/dashboard' : isBanco ? '/banco/pedidos' : isEmpresa ? '/empresa/pedidos' : '/';
 
   return (
     <BrowserRouter>
-      <AppLayout usuario={usuario} onLogout={handleLogout} />
-      <Toaster
-        position="top-right"
-        toastOptions={{
-          duration: 3500,
-          style: { fontSize: '.875rem', fontFamily: 'Inter, system-ui, sans-serif' },
-          success: { style: { background: '#f0fdf4', color: '#15803d', border: '1px solid #bbf7d0' } },
-          error:   { style: { background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca' } },
-        }}
-      />
+      <Toaster position="top-right" toastOptions={TOAST_OPTS} />
+      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#f8fafc' }}>
+        <Navbar usuario={usuario} onLogout={handleLogout} />
+        <div style={{ flex: 1 }}>
+          <Routes>
+
+            {/* ── Público ── */}
+            <Route path="/" element={<HomePage usuario={usuario} />} />
+            <Route path="/login"
+              element={!usuario
+                ? <Login onLogin={handleLogin} />
+                : <Navigate to={homeByRole} replace />} />
+            <Route path="/cadastro"
+              element={!usuario
+                ? <Cadastro onLogin={handleLogin} />
+                : <Navigate to={isCliente ? '/perfil' : homeByRole} replace />} />
+
+            {/* ── Cliente ── */}
+            <Route path="/perfil"
+              element={isCliente ? <Perfil usuario={usuario} /> : <Navigate to="/login" replace />} />
+            <Route path="/meus-pedidos"
+              element={isCliente ? <MeusPedidos usuario={usuario} /> : <Navigate to="/login" replace />} />
+
+            {/* ── Admin / Agente ── */}
+            <Route path="/dashboard"
+              element={isAdmin ? <Dashboard /> : <Navigate to={homeByRole} replace />} />
+            <Route path="/clientes"
+              element={isAdmin ? <Clientes /> : <Navigate to={homeByRole} replace />} />
+            <Route path="/pedidos"
+              element={isAdmin ? <Pedidos /> : <Navigate to={homeByRole} replace />} />
+            <Route path="/agentes"
+              element={role === 'admin' ? <Agentes /> : <Navigate to={homeByRole} replace />} />
+
+            {/* ── Backoffice compartilhado ── */}
+            <Route path="/automoveis"
+              element={(isAdmin || isBanco || isEmpresa) ? <Automoveis /> : <Navigate to="/" replace />} />
+            <Route path="/contratos"
+              element={(isAdmin || isEmpresa) ? <Contratos /> : <Navigate to={homeByRole} replace />} />
+
+            {/* ── Banco ── */}
+            <Route path="/banco/pedidos"
+              element={isBanco ? <PedidosBanco usuario={usuario} /> : <Navigate to={homeByRole} replace />} />
+
+            {/* ── Empresa ── */}
+            <Route path="/empresa/pedidos"
+              element={isEmpresa ? <PedidosEmpresa usuario={usuario} /> : <Navigate to={homeByRole} replace />} />
+
+            {/* ── Público ── */}
+            <Route path="/estrategia" element={<Estrategia />} />
+
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </div>
+        <Footer />
+      </div>
     </BrowserRouter>
   );
 }

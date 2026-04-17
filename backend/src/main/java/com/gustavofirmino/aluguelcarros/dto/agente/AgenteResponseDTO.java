@@ -15,6 +15,8 @@ public class AgenteResponseDTO {
 
     public AgenteResponseDTO() {}
 
+    private String login;
+
     public AgenteResponseDTO(Long id, String nome, String cnpj, TipoAgente tipo, String email, String telefone) {
         this.id = id;
         this.nome = nome;
@@ -24,10 +26,16 @@ public class AgenteResponseDTO {
         this.telefone = telefone;
     }
 
+    public AgenteResponseDTO(Long id, String nome, String cnpj, TipoAgente tipo, String email, String telefone, String login) {
+        this(id, nome, cnpj, tipo, email, telefone);
+        this.login = login;
+    }
+
     public Long getId() { return id; }
     public String getNome() { return nome; }
     public String getCnpj() { return cnpj; }
     public TipoAgente getTipo() { return tipo; }
     public String getEmail() { return email; }
     public String getTelefone() { return telefone; }
+    public String getLogin() { return login; }
 }

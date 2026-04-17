@@ -23,7 +23,6 @@ public class BuscarPedidoPorIdUseCase {
 
     public PedidoResponseDTO executar(Long id) {
         return pedidoRepository.findById(id)
-                .map(pedidoMapper::toDomain)
                 .map(pedidoMapper::toResponse)
                 .orElseThrow(() -> new ResourceNotFoundException("Pedido não encontrado com o id: " + id));
     }

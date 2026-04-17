@@ -20,11 +20,11 @@ public class PedidoEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "cliente_id", nullable = false)
     private ClienteEntity cliente;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "automovel_id", nullable = false)
     private AutomovelEntity automovel;
 
@@ -47,10 +47,15 @@ public class PedidoEntity {
     @Column(length = 500)
     private String observacao;
 
-    /** Agente responsável pela análise do pedido. Preenchido ao mover para EM_ANALISE. */
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "agente_id")
-    private AgenteEntity agente;
+    /** Banco que analisa o pedido — copiado de cliente.bancoAgente na criação. */
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "banco_agente_id")
+    private AgenteEntity bancoAgente;
+
+    /** Empresa que fecha o contrato — definida ao gerar o contrato. */
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "empresa_agente_id")
+    private AgenteEntity empresa;
 
     public PedidoEntity() {
     }
@@ -96,6 +101,9 @@ public class PedidoEntity {
     public String getObservacao() { return observacao; }
     public void setObservacao(String observacao) { this.observacao = observacao; }
 
-    public AgenteEntity getAgente() { return agente; }
-    public void setAgente(AgenteEntity agente) { this.agente = agente; }
+    public AgenteEntity getBancoAgente() { return bancoAgente; }
+    public void setBancoAgente(AgenteEntity bancoAgente) { this.bancoAgente = bancoAgente; }
+
+    public AgenteEntity getEmpresa() { return empresa; }
+    public void setEmpresa(AgenteEntity empresa) { this.empresa = empresa; }
 }

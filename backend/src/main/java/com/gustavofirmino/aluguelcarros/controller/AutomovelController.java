@@ -3,25 +3,26 @@ package com.gustavofirmino.aluguelcarros.controller;
 import com.gustavofirmino.aluguelcarros.application.usecase.automovel.*;
 import com.gustavofirmino.aluguelcarros.dto.automovel.AutomovelRequestDTO;
 import com.gustavofirmino.aluguelcarros.dto.automovel.AutomovelResponseDTO;
+import com.gustavofirmino.aluguelcarros.infrastructure.exception.ResourceNotFoundException;
 import io.micronaut.http.HttpResponse;
+import io.micronaut.http.MediaType;
 import io.micronaut.http.annotation.*;
+import io.micronaut.http.multipart.CompletedFileUpload;
 
 import jakarta.validation.Valid;
+import java.io.File;
+import java.io.IOException;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
+import java.util.Map;
 
-/**
- * Controller REST para gerenciamento de automóveis disponíveis para aluguel.
- *
- * Endpoints:
- *   POST   /automoveis          - Cadastra novo automóvel
- *   GET    /automoveis          - Lista todos os automóveis (ou apenas disponíveis via ?disponivel=true)
- *   GET    /automoveis/{id}     - Busca automóvel por ID
- *   PUT    /automoveis/{id}     - Atualiza dados do automóvel
- *   DELETE /automoveis/{id}     - Remove automóvel do sistema
- */
 @Controller("/automoveis")
 public class AutomovelController {
+
+    private static final Path UPLOAD_DIR = Paths.get("uploads", "carros");
 
     private final CriarAutomovelUseCase criarAutomovelUseCase;
     private final ListarAutomoveisUseCase listarAutomoveisUseCase;
@@ -46,15 +47,12 @@ public class AutomovelController {
     public HttpResponse<AutomovelResponseDTO> criar(@Body @Valid AutomovelRequestDTO dto) {
         AutomovelResponseDTO response = criarAutomovelUseCase.executar(dto);
         return HttpResponse.created(response)
-                .headers(headers -> headers.location(URI.create("/automoveis/" + response.getId())));
+                .headers(h -> h.location(URI.create("/automoveis/" + response.getId())));
     }
 
     @Get
     public List<AutomovelResponseDTO> listar(@QueryValue(defaultValue = "false") boolean disponivel) {
-        if (disponivel) {
-            return listarAutomoveisUseCase.executarDisponiveis();
-        }
-        return listarAutomoveisUseCase.executar();
+        return disponivel ? listarAutomoveisUseCase.executarDisponiveis() : listarAutomoveisUseCase.executar();
     }
 
     @Get("/{id}")
@@ -71,5 +69,28 @@ public class AutomovelController {
     public HttpResponse<Void> deletar(@PathVariable Long id) {
         deletarAutomovelUseCase.executar(id);
         return HttpResponse.noContent();
+    }
+
+    /** Upload de foto: POST /automoveis/{placa}/foto  (multipart/form-data, campo "foto") */
+    @Post(value = "/{placa}/foto", consumes = MediaType.MULTIPART_FORM_DATA)
+    public HttpResponse<Map<String, String>> uploadFoto(
+            @PathVariable String placa,
+            CompletedFileUpload foto) throws IOException {
+        Files.createDirectories(UPLOAD_DIR);
+        String filename = placa.replace("-", "").toUpperCase() + ".jpg";
+        Path dest = UPLOAD_DIR.resolve(filename);
+        Files.write(dest, foto.getBytes());
+        return HttpResponse.ok(Map.of("fotoUrl", "/automoveis/foto/" + placa.replace("-", "").toUpperCase()));
+    }
+
+    /** Serve a foto: GET /automoveis/foto/{placa} */
+    @Get(value = "/foto/{placa}", produces = "image/jpeg")
+    public HttpResponse<byte[]> getFoto(@PathVariable String placa) throws IOException {
+        String filename = placa.replace("-", "").toUpperCase() + ".jpg";
+        Path file = UPLOAD_DIR.resolve(filename);
+        if (!Files.exists(file)) {
+            return HttpResponse.notFound();
+        }
+        return HttpResponse.ok(Files.readAllBytes(file));
     }
 }

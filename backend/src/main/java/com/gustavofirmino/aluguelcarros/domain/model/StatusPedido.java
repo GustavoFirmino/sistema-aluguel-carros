@@ -4,27 +4,25 @@ package com.gustavofirmino.aluguelcarros.domain.model;
  * Enumeração dos possíveis estados de um pedido de aluguel.
  *
  * Fluxo principal:
- *   PENDENTE → EM_ANALISE → APROVADO → CONCLUIDO
- *                         ↘ REJEITADO
- *   PENDENTE → CANCELADO (cancelado pelo cliente)
+ *   PENDENTE → APROVADO_BANCO → CONCLUIDO (contrato fechado pela empresa)
+ *   PENDENTE → REJEITADO (pelo banco)
+ *   APROVADO_BANCO → REJEITADO (pela empresa)
+ *   PENDENTE → CANCELADO (pelo cliente)
  */
 public enum StatusPedido {
 
-    /** Pedido criado pelo cliente, aguardando análise do agente. */
+    /** Pedido criado pelo cliente, aguardando análise do banco. */
     PENDENTE,
 
-    /** Pedido em análise financeira pelo agente. */
-    EM_ANALISE,
+    /** Pedido aprovado pelo banco; aguardando empresa fechar contrato. */
+    APROVADO_BANCO,
 
-    /** Pedido aprovado pelo agente, contrato pode ser emitido. */
-    APROVADO,
-
-    /** Pedido rejeitado pelo agente após análise financeira. */
+    /** Pedido rejeitado pelo banco ou pela empresa. */
     REJEITADO,
 
-    /** Pedido cancelado pelo próprio cliente antes da aprovação. */
+    /** Pedido cancelado pelo próprio cliente. */
     CANCELADO,
 
-    /** Contrato de aluguel concluído com sucesso. */
+    /** Contrato fechado pela empresa — aluguel concluído. */
     CONCLUIDO
 }

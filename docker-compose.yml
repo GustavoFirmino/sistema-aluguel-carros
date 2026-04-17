@@ -1,43 +1,81 @@
 services:
 
-  # ── Banco de Dados ──────────────────────────────────────
+  # ── Banco de Dados ───────────────────────────────────────────
   postgres:
     image: postgres:16
     container_name: aluguel-carros-db
     environment:
       POSTGRES_DB: aluguel_carros
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d aluguel_carros"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d aluguel_carros"]
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - aluguel-net
+
+  # ── Backend (API REST) ───────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: aluguel-carros-api
+    environment:
+      MICRONAUT_ENVIRONMENTS: prod
+      DB_URL: jdbc:postgresql://postgres:5432/aluguel_carros
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - aluguel-net
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ── Frontend (React + Nginx) ─────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: aluguel-carros-ui
+    ports:
+      - "80:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - aluguel-net
 
 volumes:
   postgres_data:
 
-# ──────────────────────────────────────────────────────────
-# COMO RODAR O SISTEMA:
+networks:
+  aluguel-net:
+    driver: bridge
+
+# ──────────────────────────────────────────────────────────────
+# COMO RODAR (produção completa com Docker):
 #
-# 1. Subir o banco PostgreSQL:
-#      docker-compose up -d
+#   docker compose up --build
 #
-# 2. Rodar o backend (nova aba do terminal):
-#      cd backend
-#      ./gradlew run
-#    → API disponível em: http://localhost:8080
+#   → Frontend: http://localhost
+#   → API:      http://localhost:8080
+#   → Swagger:  http://localhost:8080/swagger-ui
 #
-# 3. Rodar o frontend (nova aba do terminal):
-#      cd frontend
-#      npm run dev
-#    → UI disponível em: http://localhost:5173
-#
-# Para usar PostgreSQL no backend, edite application.properties:
-#   - Comente as linhas do H2
-#   - Descomente as linhas do PostgreSQL
-# ──────────────────────────────────────────────────────────
+# Variáveis de ambiente opcionais (.env na raiz):
+#   DB_USER=postgres
+#   DB_PASSWORD=minhasenha
+# ──────────────────────────────────────────────────────────────

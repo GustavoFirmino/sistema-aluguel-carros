@@ -14,16 +14,6 @@ import com.gustavofirmino.aluguelcarros.infrastructure.persistence.repository.Cl
 import com.gustavofirmino.aluguelcarros.infrastructure.persistence.repository.PedidoRepository;
 import jakarta.inject.Singleton;
 
-/**
- * Caso de uso para criação de um novo pedido de aluguel.
- *
- * Regras de negócio:
- *  - O cliente deve estar cadastrado no sistema.
- *  - O automóvel deve estar cadastrado e disponível.
- *  - A data de início deve ser anterior à data de fim.
- *  - O pedido é criado com status PENDENTE.
- *  - O automóvel é marcado como indisponível após a criação do pedido.
- */
 @Singleton
 public class CriarPedidoUseCase {
 
@@ -50,29 +40,32 @@ public class CriarPedidoUseCase {
             throw new BusinessException("A data de fim deve ser posterior à data de início.");
         }
 
-        ClienteEntity clienteEntity = clienteRepository.findById(dto.getClienteId())
-                .orElseThrow(() -> new ResourceNotFoundException("Cliente não encontrado com o id: " + dto.getClienteId()));
+        ClienteEntity cliente = clienteRepository.findById(dto.getClienteId())
+                .orElseThrow(() -> new ResourceNotFoundException("Cliente não encontrado: " + dto.getClienteId()));
 
-        AutomovelEntity automovelEntity = automovelRepository.findById(dto.getAutomovelId())
-                .orElseThrow(() -> new ResourceNotFoundException("Automóvel não encontrado com o id: " + dto.getAutomovelId()));
-
-        if (!automovelEntity.isDisponivel()) {
-            throw new BusinessException("O automóvel selecionado não está disponível para aluguel no momento.");
+        if (cliente.getBancoAgente() == null) {
+            throw new BusinessException("Selecione um banco no seu perfil antes de fazer um pedido.");
         }
 
-        PedidoEntity pedidoEntity = new PedidoEntity();
-        pedidoEntity.setCliente(clienteEntity);
-        pedidoEntity.setAutomovel(automovelEntity);
-        pedidoEntity.setDataInicio(dto.getDataInicio());
-        pedidoEntity.setDataFim(dto.getDataFim());
-        pedidoEntity.setStatus(StatusPedido.PENDENTE);
-        pedidoEntity.setObservacao(dto.getObservacao());
+        AutomovelEntity automovel = automovelRepository.findById(dto.getAutomovelId())
+                .orElseThrow(() -> new ResourceNotFoundException("Automóvel não encontrado: " + dto.getAutomovelId()));
 
-        // Marca o automóvel como indisponível
-        automovelEntity.setDisponivel(false);
-        automovelRepository.update(automovelEntity);
+        if (!automovel.isDisponivel()) {
+            throw new BusinessException("O automóvel selecionado não está disponível para aluguel.");
+        }
 
-        PedidoEntity salvo = pedidoRepository.save(pedidoEntity);
-        return pedidoMapper.toResponse(pedidoMapper.toDomain(salvo));
+        PedidoEntity pedido = new PedidoEntity();
+        pedido.setCliente(cliente);
+        pedido.setAutomovel(automovel);
+        pedido.setDataInicio(dto.getDataInicio());
+        pedido.setDataFim(dto.getDataFim());
+        pedido.setStatus(StatusPedido.PENDENTE);
+        pedido.setObservacao(dto.getObservacao());
+        pedido.setBancoAgente(cliente.getBancoAgente());
+
+        automovel.setDisponivel(false);
+        automovelRepository.update(automovel);
+
+        return pedidoMapper.toResponse(pedidoRepository.save(pedido));
     }
 }

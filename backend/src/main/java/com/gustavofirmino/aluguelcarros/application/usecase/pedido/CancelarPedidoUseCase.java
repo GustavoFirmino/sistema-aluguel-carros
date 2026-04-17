@@ -51,6 +51,6 @@ public class CancelarPedidoUseCase {
         automovelRepository.update(automovel);
 
         PedidoEntity atualizado = pedidoRepository.update(pedido);
-        return pedidoMapper.toResponse(pedidoMapper.toDomain(atualizado));
+        return pedidoMapper.toResponse(atualizado);
     }
 }

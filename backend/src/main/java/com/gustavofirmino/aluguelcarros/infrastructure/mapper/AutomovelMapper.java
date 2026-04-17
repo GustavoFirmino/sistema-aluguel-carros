@@ -6,51 +6,27 @@ import com.gustavofirmino.aluguelcarros.dto.automovel.AutomovelResponseDTO;
 import com.gustavofirmino.aluguelcarros.infrastructure.persistence.entity.AutomovelEntity;
 import jakarta.inject.Singleton;
 
-/**
- * Mapper responsável pela conversão entre DTOs, modelos de domínio e entidades JPA de Automóvel.
- */
 @Singleton
 public class AutomovelMapper {
 
     public Automovel toDomain(AutomovelRequestDTO dto) {
         return new Automovel(null, dto.getMatricula(), dto.getAno(), dto.getMarca(),
-                dto.getModelo(), dto.getPlaca(), true, dto.getValorDiaria());
+                dto.getModelo(), dto.getPlaca(), dto.getCor(), true, dto.getValorDiaria());
     }
 
-    public AutomovelEntity toEntity(Automovel automovel) {
-        return new AutomovelEntity(
-                automovel.getId(),
-                automovel.getMatricula(),
-                automovel.getAno(),
-                automovel.getMarca(),
-                automovel.getModelo(),
-                automovel.getPlaca(),
-                automovel.isDisponivel(),
-                automovel.getValorDiaria());
+    public AutomovelEntity toEntity(Automovel a) {
+        return new AutomovelEntity(a.getId(), a.getMatricula(), a.getAno(), a.getMarca(),
+                a.getModelo(), a.getPlaca(), a.getCor(), a.isDisponivel(), a.getValorDiaria());
     }
 
-    public Automovel toDomain(AutomovelEntity entity) {
-        return new Automovel(
-                entity.getId(),
-                entity.getMatricula(),
-                entity.getAno(),
-                entity.getMarca(),
-                entity.getModelo(),
-                entity.getPlaca(),
-                entity.isDisponivel(),
-                entity.getValorDiaria());
+    public Automovel toDomain(AutomovelEntity e) {
+        return new Automovel(e.getId(), e.getMatricula(), e.getAno(), e.getMarca(),
+                e.getModelo(), e.getPlaca(), e.getCor(), e.isDisponivel(), e.getValorDiaria());
     }
 
-    public AutomovelResponseDTO toResponse(Automovel automovel) {
-        return new AutomovelResponseDTO(
-                automovel.getId(),
-                automovel.getMatricula(),
-                automovel.getAno(),
-                automovel.getMarca(),
-                automovel.getModelo(),
-                automovel.getPlaca(),
-                automovel.isDisponivel(),
-                automovel.getValorDiaria());
+    public AutomovelResponseDTO toResponse(Automovel a) {
+        return new AutomovelResponseDTO(a.getId(), a.getMatricula(), a.getAno(), a.getMarca(),
+                a.getModelo(), a.getPlaca(), a.getCor(), a.isDisponivel(), a.getValorDiaria());
     }
 
     public void updateEntity(AutomovelEntity entity, AutomovelRequestDTO dto) {
@@ -59,6 +35,7 @@ public class AutomovelMapper {
         entity.setMarca(dto.getMarca());
         entity.setModelo(dto.getModelo());
         entity.setPlaca(dto.getPlaca());
+        entity.setCor(dto.getCor());
         entity.setValorDiaria(dto.getValorDiaria());
     }
 }

@@ -4,9 +4,6 @@ import com.gustavofirmino.aluguelcarros.domain.model.StatusPedido;
 import io.micronaut.serde.annotation.Serdeable;
 import jakarta.validation.constraints.NotNull;
 
-/**
- * DTO para atualização do status de um pedido de aluguel por um agente.
- */
 @Serdeable
 public class AtualizarStatusPedidoDTO {
 
@@ -15,7 +12,6 @@ public class AtualizarStatusPedidoDTO {
 
     private String observacao;
 
-    /** ID do agente responsável pela análise (obrigatório ao mover para EM_ANALISE). */
     private Long agenteId;
 
     public AtualizarStatusPedidoDTO() {}

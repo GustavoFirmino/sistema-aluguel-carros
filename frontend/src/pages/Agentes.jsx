@@ -6,7 +6,7 @@ import ConfirmModal from '../components/ConfirmModal';
 
 const TIPO_LABELS = { EMPRESA: 'Empresa', BANCO: 'Banco' };
 
-const emptyForm = { nome: '', cnpj: '', tipo: 'EMPRESA', email: '', telefone: '' };
+const emptyForm = { nome: '', cnpj: '', tipo: 'EMPRESA', email: '', telefone: '', login: '', senha: '' };
 
 export default function Agentes() {
   const [agentes, setAgentes] = useState([]);
@@ -40,7 +40,7 @@ export default function Agentes() {
 
   const abrirEditar = (a) => {
     setEditando(a);
-    setForm({ nome: a.nome, cnpj: a.cnpj, tipo: a.tipo, email: a.email || '', telefone: a.telefone || '' });
+    setForm({ nome: a.nome, cnpj: a.cnpj, tipo: a.tipo, email: a.email || '', telefone: a.telefone || '', login: a.login || '', senha: '' });
     setShowModal(true);
   };
 
@@ -190,6 +190,20 @@ export default function Agentes() {
                   <label>Telefone</label>
                   <input className="input" value={form.telefone}
                     onChange={e => setForm(f => ({ ...f, telefone: e.target.value }))} />
+                </div>
+              </div>
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Login (para acesso ao sistema)</label>
+                  <input className="input" placeholder="Ex: banco1"
+                    value={form.login}
+                    onChange={e => setForm(f => ({ ...f, login: e.target.value }))} />
+                </div>
+                <div className="form-group">
+                  <label>Senha {editando ? '(deixe vazio para manter)' : ''}</label>
+                  <input className="input" type="password" placeholder="mínimo 6 caracteres"
+                    value={form.senha}
+                    onChange={e => setForm(f => ({ ...f, senha: e.target.value }))} />
                 </div>
               </div>
               <div className="modal-footer">

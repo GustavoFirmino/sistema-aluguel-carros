@@ -34,6 +34,12 @@ public class AgenteEntity {
     @Column
     private String telefone;
 
+    @Column(unique = true)
+    private String login;
+
+    @Column
+    private String senha;
+
     public AgenteEntity() {}
 
     public AgenteEntity(Long id, String nome, String cnpj, TipoAgente tipo, String email, String telefone) {
@@ -43,6 +49,12 @@ public class AgenteEntity {
         this.tipo = tipo;
         this.email = email;
         this.telefone = telefone;
+    }
+
+    public AgenteEntity(Long id, String nome, String cnpj, TipoAgente tipo, String email, String telefone, String login, String senha) {
+        this(id, nome, cnpj, tipo, email, telefone);
+        this.login = login;
+        this.senha = senha;
     }
 
     public Long getId() { return id; }
@@ -62,4 +74,10 @@ public class AgenteEntity {
 
     public String getTelefone() { return telefone; }
     public void setTelefone(String telefone) { this.telefone = telefone; }
+
+    public String getLogin() { return login; }
+    public void setLogin(String login) { this.login = login; }
+
+    public String getSenha() { return senha; }
+    public void setSenha(String senha) { this.senha = senha; }
 }

@@ -1,56 +1,47 @@
 package com.gustavofirmino.aluguelcarros.dto.automovel;
 
 import io.micronaut.serde.annotation.Serdeable;
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-
+import jakarta.validation.constraints.*;
 import java.math.BigDecimal;
 
-/**
- * DTO de entrada para criação e atualização de automóvel.
- */
 @Serdeable
 public class AutomovelRequestDTO {
 
     @NotBlank(message = "Matrícula é obrigatória.")
-    private String matricula;
+    @Size(max = 30) private String matricula;
 
     @NotNull(message = "Ano é obrigatório.")
-    @Min(value = 1900, message = "Ano deve ser maior que 1900.")
-    private Integer ano;
+    @Min(1900) @Max(2030) private Integer ano;
 
     @NotBlank(message = "Marca é obrigatória.")
-    private String marca;
+    @Size(max = 50) private String marca;
 
     @NotBlank(message = "Modelo é obrigatório.")
-    private String modelo;
+    @Size(max = 80) private String modelo;
 
     @NotBlank(message = "Placa é obrigatória.")
+    @Pattern(regexp = "[A-Z]{3}-?\\d[A-Z0-9]\\d{2}", message = "Formato de placa inválido.")
     private String placa;
 
+    @Size(max = 40) private String cor;
+
     @NotNull(message = "Valor da diária é obrigatório.")
-    @DecimalMin(value = "0.01", message = "Valor da diária deve ser maior que zero.")
-    private BigDecimal valorDiaria;
+    @DecimalMin("0.01") private BigDecimal valorDiaria;
 
     public AutomovelRequestDTO() {}
 
     public String getMatricula() { return matricula; }
-    public void setMatricula(String matricula) { this.matricula = matricula; }
-
+    public void setMatricula(String m) { this.matricula = m; }
     public Integer getAno() { return ano; }
-    public void setAno(Integer ano) { this.ano = ano; }
-
+    public void setAno(Integer a) { this.ano = a; }
     public String getMarca() { return marca; }
-    public void setMarca(String marca) { this.marca = marca; }
-
+    public void setMarca(String m) { this.marca = m; }
     public String getModelo() { return modelo; }
-    public void setModelo(String modelo) { this.modelo = modelo; }
-
+    public void setModelo(String m) { this.modelo = m; }
     public String getPlaca() { return placa; }
-    public void setPlaca(String placa) { this.placa = placa; }
-
+    public void setPlaca(String p) { this.placa = p; }
+    public String getCor() { return cor; }
+    public void setCor(String c) { this.cor = c; }
     public BigDecimal getValorDiaria() { return valorDiaria; }
-    public void setValorDiaria(BigDecimal valorDiaria) { this.valorDiaria = valorDiaria; }
+    public void setValorDiaria(BigDecimal v) { this.valorDiaria = v; }
 }

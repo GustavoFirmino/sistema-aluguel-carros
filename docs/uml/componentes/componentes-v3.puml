@@ -1,0 +1,104 @@
+@startuml componentes-v3
+title Sistema de Aluguel de Carros — Diagrama de Componentes (Sprint 03)
+
+skinparam componentBackgroundColor #EEF5FF
+skinparam componentBorderColor #336699
+skinparam packageBackgroundColor #F5F5FF
+skinparam packageBorderColor #AAAACC
+skinparam ArrowColor #336699
+skinparam shadowing false
+
+package "Frontend (React + Vite)" {
+  component "Login" as login
+  component "Dashboard" as dash
+  component "Clientes" as pg_cli
+  component "Automóveis" as pg_auto
+  component "Agentes" as pg_agente
+  component "Pedidos" as pg_ped
+  component "Contratos" as pg_ctr
+  component "api.js (Axios)" as axios
+  component "useAuth (RBAC)" as rbac
+
+  login --> rbac
+  dash --> axios
+  pg_cli --> axios
+  pg_auto --> axios
+  pg_agente --> axios
+  pg_ped --> axios
+  pg_ctr --> axios
+  pg_ped --> rbac
+  pg_auto --> rbac
+}
+
+package "Backend (Micronaut)" {
+
+  package "controller" {
+    component "ClienteController" as cc
+    component "AutomovelController" as ac
+    component "PedidoController" as pc
+    component "AgenteController" as agc
+    component "ContratoController" as ctrc
+  }
+
+  package "application.usecase" {
+    component "UseCase: Cliente" as uc_cli
+    component "UseCase: Automovel" as uc_auto
+    component "UseCase: Pedido" as uc_ped
+    component "UseCase: Agente" as uc_agente
+    component "UseCase: Contrato" as uc_ctr
+  }
+
+  package "infrastructure" {
+    component "Mappers" as mappers
+    component "Repositories (JPA)" as repos
+    component "GlobalExceptionHandler" as exc
+    component "DataSeeder" as seeder
+  }
+
+  package "domain.model" {
+    component "Cliente / Empregador" as dm_cli
+    component "Automovel" as dm_auto
+    component "Pedido / StatusPedido" as dm_ped
+    component "Agente / TipoAgente" as dm_agente
+    component "Contrato" as dm_ctr
+  }
+}
+
+database "H2 / PostgreSQL" as banco
+
+' Frontend → Backend
+axios --> cc : HTTP REST
+axios --> ac : HTTP REST
+axios --> pc : HTTP REST
+axios --> agc : HTTP REST
+axios --> ctrc : HTTP REST
+
+' Controllers → Use Cases
+cc --> uc_cli
+ac --> uc_auto
+pc --> uc_ped
+agc --> uc_agente
+ctrc --> uc_ctr
+
+' Use Cases → Domain + Infra
+uc_cli --> dm_cli
+uc_auto --> dm_auto
+uc_ped --> dm_ped
+uc_agente --> dm_agente
+uc_ctr --> dm_ctr
+
+uc_cli --> mappers
+uc_auto --> mappers
+uc_ped --> mappers
+uc_agente --> mappers
+uc_ctr --> mappers
+
+uc_cli --> repos
+uc_auto --> repos
+uc_ped --> repos
+uc_agente --> repos
+uc_ctr --> repos
+
+repos --> banco : JDBC
+
+@enduml

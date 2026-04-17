@@ -1,16 +1,19 @@
 package com.gustavofirmino.aluguelcarros.controller;
 
 import com.gustavofirmino.aluguelcarros.application.usecase.cliente.*;
+import com.gustavofirmino.aluguelcarros.dto.PageDTO;
 import com.gustavofirmino.aluguelcarros.dto.cliente.ClienteRequestDTO;
 import com.gustavofirmino.aluguelcarros.dto.cliente.ClienteResponseDTO;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.annotation.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 import jakarta.validation.Valid;
 import java.net.URI;
-import java.util.List;
 
 @Controller("/clientes")
+@Tag(name = "Clientes")
 public class ClienteController {
 
     private final CriarClienteUseCase criarClienteUseCase;
@@ -33,6 +36,7 @@ public class ClienteController {
     }
 
     @Post
+    @Operation(summary = "Cadastrar cliente")
     public HttpResponse<ClienteResponseDTO> criar(@Body @Valid ClienteRequestDTO dto) {
         ClienteResponseDTO response = criarClienteUseCase.executar(dto);
         return HttpResponse.created(response)
@@ -40,21 +44,27 @@ public class ClienteController {
     }
 
     @Get
-    public List<ClienteResponseDTO> listar() {
-        return listarClientesUseCase.executar();
+    @Operation(summary = "Listar clientes (paginado)", description = "Parâmetros: pagina (default 0), tamanho (default 20).")
+    public PageDTO<ClienteResponseDTO> listar(
+            @QueryValue(defaultValue = "0") int pagina,
+            @QueryValue(defaultValue = "20") int tamanho) {
+        return listarClientesUseCase.executar(pagina, tamanho);
     }
 
     @Get("/{id}")
+    @Operation(summary = "Buscar cliente por ID")
     public ClienteResponseDTO buscarPorId(@PathVariable Long id) {
         return buscarClientePorIdUseCase.executar(id);
     }
 
     @Put("/{id}")
+    @Operation(summary = "Atualizar cliente")
     public ClienteResponseDTO atualizar(@PathVariable Long id, @Body @Valid ClienteRequestDTO dto) {
         return atualizarClienteUseCase.executar(id, dto);
     }
 
     @Delete("/{id}")
+    @Operation(summary = "Remover cliente")
     public HttpResponse<Void> deletar(@PathVariable Long id) {
         deletarClienteUseCase.executar(id);
         return HttpResponse.noContent();

@@ -12,4 +12,5 @@ import java.util.Optional;
 public interface AgenteRepository extends JpaRepository<AgenteEntity, Long> {
     Optional<AgenteEntity> findByCnpj(String cnpj);
     List<AgenteEntity> findByTipo(TipoAgente tipo);
+    Optional<AgenteEntity> findByLogin(String login);
 }
