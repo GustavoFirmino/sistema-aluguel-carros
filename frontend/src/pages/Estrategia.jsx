@@ -1,4 +1,4 @@
-import { Palette, TrendingUp, Users, AlertCircle, Star, Shield, Zap, RefreshCw, BookOpen, ExternalLink } from 'lucide-react';
+import { Palette, TrendingUp, Users, AlertCircle, Star, Shield, Zap, RefreshCw, BookOpen, ExternalLink, GitBranch } from 'lucide-react';
 
 /* ── Dados ────────────────────────────────────────────────── */
 
@@ -167,7 +167,107 @@ const ESTRATEGIAS = [
   },
 ];
 
+const DIAGRAMAS = [
+  {
+    id: 'casos-de-uso',
+    titulo: 'Casos de Uso',
+    versao: 'v3',
+    src: '/uml/caso-de-uso-v3.png',
+    cor: '#2563eb',
+    bg: '#eff6ff',
+    descricao: 'Atores (Cliente, Banco, Empresa, Admin) e seus casos de uso dentro do sistema. Cobre o fluxo completo de reserva, aprovação bancária e geração de contrato.',
+    puml: 'docs/uml/casos-de-uso/caso-de-uso-v3.puml',
+  },
+  {
+    id: 'classes',
+    titulo: 'Diagrama de Classes',
+    versao: 'v4',
+    src: '/uml/classes-v4.png',
+    cor: '#7c3aed',
+    bg: '#f5f3ff',
+    descricao: 'Modelos de domínio (POJOs), entidades JPA, repositórios, use cases e controllers com seus atributos, métodos e relacionamentos.',
+    puml: 'docs/uml/classes/classes-v4.puml',
+  },
+  {
+    id: 'componentes',
+    titulo: 'Diagrama de Componentes',
+    versao: 'v4',
+    src: '/uml/componentes-v4.png',
+    cor: '#0891b2',
+    bg: '#ecfeff',
+    descricao: 'Arquitetura em camadas com interfaces UML (bolinhas e meias-luas): REST API, IAuth e IData. Mostra como Frontend, Filters, Controllers, UseCases e Repositories se conectam.',
+    puml: 'docs/uml/componentes/componentes-v4.puml',
+  },
+  {
+    id: 'implantacao',
+    titulo: 'Diagrama de Implantação',
+    versao: 'v3',
+    src: '/uml/implantacao-v3.png',
+    cor: '#059669',
+    bg: '#f0fdf4',
+    descricao: 'Infraestrutura de produção: container Nginx (frontend), container Micronaut (backend) e PostgreSQL, orquestrados via Docker Compose.',
+    puml: 'docs/uml/implantacao/implantacao-v3.puml',
+  },
+  {
+    id: 'pacotes',
+    titulo: 'Diagrama de Pacotes',
+    versao: 'v3',
+    src: '/uml/pacotes-v3.png',
+    cor: '#d97706',
+    bg: '#fffbeb',
+    descricao: 'Organização dos pacotes Java do backend: controller, application.auth, application.usecase, domain.model, dto, infrastructure (filter, mapper, persistence, exception).',
+    puml: 'docs/uml/pacotes/pacotes-v3.puml',
+  },
+  {
+    id: 'estados',
+    titulo: 'Transição de Estados do Pedido',
+    versao: 'v1',
+    src: '/uml/estados-pedido-v1.png',
+    cor: '#dc2626',
+    bg: '#fef2f2',
+    descricao: 'Máquina de estados do Pedido: PENDENTE → APROVADO_BANCO → CONCLUIDO, com desvios para REJEITADO e CANCELADO, guards condicionais e ações associadas a cada transição.',
+    puml: 'docs/uml/estados/estados-pedido-v1.puml',
+  },
+];
+
 /* ── Componentes ─────────────────────────────────────────── */
+
+function DiagramaCard({ d }) {
+  return (
+    <div style={{ background: '#fff', borderRadius: 14, border: '1px solid #e5e7eb', overflow: 'hidden', boxShadow: '0 2px 12px rgba(0,0,0,.05)' }}>
+      <div style={{ padding: '1rem 1.25rem .75rem', borderBottom: `3px solid ${d.cor}`, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem' }}>
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem', marginBottom: '.3rem' }}>
+            <span style={{ fontWeight: 800, fontSize: '.95rem', color: '#0f172a' }}>{d.titulo}</span>
+            <span style={{ fontSize: '.68rem', fontWeight: 700, background: d.bg, color: d.cor, borderRadius: 999, padding: '.15rem .55rem', border: `1px solid ${d.cor}22` }}>{d.versao}</span>
+          </div>
+          <p style={{ fontSize: '.82rem', color: '#64748b', lineHeight: 1.55, margin: 0 }}>{d.descricao}</p>
+        </div>
+      </div>
+      <div style={{ background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 220, overflow: 'hidden', position: 'relative' }}>
+        <img
+          src={d.src}
+          alt={`Diagrama ${d.titulo}`}
+          style={{ maxWidth: '100%', maxHeight: 400, objectFit: 'contain', display: 'block' }}
+          onError={e => { e.currentTarget.style.display = 'none'; e.currentTarget.nextSibling.style.display = 'flex'; }}
+        />
+        <div style={{ display: 'none', flexDirection: 'column', alignItems: 'center', gap: '.75rem', padding: '2rem', color: '#94a3b8', textAlign: 'center' }}>
+          <GitBranch size={36} color="#cbd5e1" />
+          <div style={{ fontSize: '.82rem', color: '#94a3b8', lineHeight: 1.5 }}>
+            PNG não encontrado.<br />
+            Gere o diagrama e copie para <code style={{ background: '#f1f5f9', padding: '.1rem .3rem', borderRadius: 4, fontSize: '.78rem', color: '#475569' }}>frontend/public/uml/</code>
+          </div>
+          <code style={{ fontSize: '.75rem', color: '#6366f1', background: '#eef2ff', padding: '.3rem .6rem', borderRadius: 6 }}>{d.puml}</code>
+        </div>
+      </div>
+      <div style={{ padding: '.75rem 1.25rem', borderTop: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', gap: '.5rem' }}>
+        <GitBranch size={13} color="#9ca3af" />
+        <code style={{ fontSize: '.73rem', color: '#6b7280' }}>{d.puml}</code>
+      </div>
+    </div>
+  );
+}
+
 
 function ColorSwatch({ cor }) {
   return (
@@ -339,6 +439,19 @@ export default function Estrategia() {
                 <div style={{ fontSize: '.72rem', color: '#9ca3af', fontStyle: 'italic' }}>{m.fonte}</div>
               </div>
             ))}
+          </div>
+        </section>
+
+        {/* ── Seção 4: Diagramas UML ── */}
+        <section style={{ marginBottom: '4rem' }}>
+          <SectionHeader
+            icon={<GitBranch size={22} color="#0891b2" />}
+            badge="Modelagem · UML"
+            titulo="Diagramas UML do Sistema"
+            subtitulo="Modelagem completa do Sistema de Aluguel de Carros desenvolvida ao longo das três sprints. Todos os diagramas são gerados a partir dos arquivos-fonte PlantUML disponíveis no repositório."
+          />
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(480px, 1fr))', gap: '1.5rem' }}>
+            {DIAGRAMAS.map(d => <DiagramaCard key={d.id} d={d} />)}
           </div>
         </section>
 

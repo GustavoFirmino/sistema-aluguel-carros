@@ -84,7 +84,12 @@ export default function Footer() {
           © {new Date().getFullYear()} Roda Mundo Aluguel. Todos os direitos reservados.
         </span>
         <span style={{ fontSize: '.78rem', color: '#475569' }}>
-          CNPJ: 00.000.000/0001-00
+          CNPJ: 00.000.000/0001-00 &nbsp;·&nbsp;
+          <a href="/estrategia" style={{ color: '#475569', textDecoration: 'underline', textUnderlineOffset: 3 }}
+            onMouseEnter={e => e.target.style.color = '#94a3b8'}
+            onMouseLeave={e => e.target.style.color = '#475569'}>
+            Documentação Técnica & Estratégia
+          </a>
         </span>
       </div>
     </footer>

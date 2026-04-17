@@ -224,14 +224,18 @@ CANCELADO      REJEITADO
 
 ### Diagramas UML
 
-| Diagrama | Arquivo fonte | PNG |
+Os diagramas foram centralizados na rota **[`/estrategia`](http://localhost:5173/estrategia)** do próprio frontend — a mesma página que documenta as estratégias de conversão e paleta de cores. A decisão faz sentido porque `/estrategia` já funciona como a **documentação viva do projeto**: reúne as decisões de design (cores, psicologia, UX) e a arquitetura técnica (UML) em um único endpoint público, sem precisar de ferramentas externas.
+
+| Diagrama | Arquivo fonte `.puml` | PNG servido em |
 |---|---|---|
-| Casos de Uso | [`docs/uml/casos-de-uso/caso-de-uso-v3.puml`](docs/uml/casos-de-uso/caso-de-uso-v3.puml) | `caso-de-uso-v3.png` |
-| Classes | [`docs/uml/classes/classes-v4.puml`](docs/uml/classes/classes-v4.puml) | `classes-v4.png` |
-| Componentes | [`docs/uml/componentes/componentes-v4.puml`](docs/uml/componentes/componentes-v4.puml) | `componentes-v4.png` |
-| Implantação | [`docs/uml/implantacao/implantacao-v3.puml`](docs/uml/implantacao/implantacao-v3.puml) | `implantacao-v3.png` |
-| Pacotes | [`docs/uml/pacotes/pacotes-v3.puml`](docs/uml/pacotes/pacotes-v3.puml) | `pacotes-v3.png` |
-| Transição de Estados | [`docs/uml/estados/estados-pedido-v1.puml`](docs/uml/estados/estados-pedido-v1.puml) | `estados-pedido-v1.png` |
+| Casos de Uso | [`docs/uml/casos-de-uso/caso-de-uso-v3.puml`](docs/uml/casos-de-uso/caso-de-uso-v3.puml) | `frontend/public/uml/caso-de-uso-v3.png` |
+| Classes | [`docs/uml/classes/classes-v4.puml`](docs/uml/classes/classes-v4.puml) | `frontend/public/uml/classes-v4.png` |
+| Componentes | [`docs/uml/componentes/componentes-v4.puml`](docs/uml/componentes/componentes-v4.puml) | `frontend/public/uml/componentes-v4.png` |
+| Implantação | [`docs/uml/implantacao/implantacao-v3.puml`](docs/uml/implantacao/implantacao-v3.puml) | `frontend/public/uml/implantacao-v3.png` |
+| Pacotes | [`docs/uml/pacotes/pacotes-v3.puml`](docs/uml/pacotes/pacotes-v3.puml) | `frontend/public/uml/pacotes-v3.png` |
+| Transição de Estados | [`docs/uml/estados/estados-pedido-v1.puml`](docs/uml/estados/estados-pedido-v1.puml) | `frontend/public/uml/estados-pedido-v1.png` |
+
+> **Para publicar:** exporte cada `.puml` como PNG (VS Code + plugin PlantUML, `Alt+D` → exportar) e salve em **`frontend/public/uml/`**. O Vite serve essa pasta como estático em dev; o Nginx faz o mesmo em produção. Os PNGs em `docs/uml/` são o artefato versionado — os em `frontend/public/uml/` são o que aparece no site.
 
 
 ---
