@@ -22,7 +22,7 @@
       </div>
     </td>
     <td align="center" width="180px">
-      <img src="docs/images/logo.png" alt="Logo Roda Mundo" width="140px"/>
+      <img src="docs/images/logo.jpeg" alt="Logo Roda Mundo" width="140px"/>
     </td>
   </tr>
 </table>
